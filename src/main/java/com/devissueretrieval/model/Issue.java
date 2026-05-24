@@ -17,6 +17,8 @@ public class Issue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true)
     private Long githubIssueId;
     private String title;
 

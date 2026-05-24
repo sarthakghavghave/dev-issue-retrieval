@@ -21,10 +21,17 @@ public class GitHubClient {
     private String githubToken;
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private static final List<String> REPOSITORIES = List.of(
+            "spring-projects/spring-boot",
+            "apache/kafka",
+            "kubernetes/kubernetes",
+            "docker/compose",
+            "postgres/postgres"
+    );
 
-    public List<GitHubIssueDto> fetchIssues() {
+    public List<GitHubIssueDto> fetchIssues(String repository) {
 
-        String url = "https://api.github.com/repos/spring-projects/spring-boot/issues";
+        String url = "https://api.github.com/repos/" + repository + "/issues";
 
         RequestEntity<Void> request = RequestEntity
                 .get(URI.create(url))

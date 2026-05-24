@@ -17,32 +17,46 @@ public class IssueService {
     private final GitHubClient gitHubClient;
     private final IssueRepository issueRepository;
 
+    private static final List<String> REPOSITORIES = List.of(
+            "spring-projects/spring-boot",
+            "apache/kafka",
+            "kubernetes/kubernetes",
+            "docker/compose",
+            "postgres/postgres"
+    );
+
     public void fetchAndSaveIssues() {
 
-        List<GitHubIssueDto> githubIssues = gitHubClient.fetchIssues();
+        for (String repository : REPOSITORIES) {
 
-        List<Issue> issues = githubIssues.stream()
-                .map(dto -> Issue.builder()
-                        .githubIssueId(dto.getId())
-                        .title(dto.getTitle())
-                        .body(dto.getBody())
-                        .issueUrl(dto.getHtml_url())
-                        .source("github")
-                        .repositoryName("spring-boot")
-                        .createdAt(dto.getCreated_at())
-                        .updatedAt(dto.getUpdated_at())
-                        .labels(
-                                dto.getLabels() == null
-                                        ? ""
-                                        : dto.getLabels()
-                                        .stream()
-                                        .map(GitHubLabelDto::getName)
-                                        .reduce((a, b) -> a + "," + b)
-                                        .orElse("")
-                        )
-                        .build())
-                .toList();
+            List<GitHubIssueDto> githubIssues = gitHubClient.fetchIssues(repository);
+            List<Issue> issues = githubIssues.stream()
+                    .filter(dto -> (dto.getTitle() != null && !dto.getTitle().isBlank())
+                                   || (dto.getBody() != null && !dto.getBody().isBlank())
+                    )   // only-text or only-body is acceptable
+                    .filter(dto -> !issueRepository.existsByGithubIssueId(dto.getId())) // filters duplicate
 
-        issueRepository.saveAll(issues);
+                    .map(dto -> Issue.builder()
+                            .githubIssueId(dto.getId())
+                            .title(dto.getTitle())
+                            .body(dto.getBody())
+                            .issueUrl(dto.getHtml_url())
+                            .source("github")
+                            .repositoryName(repository)
+                            .createdAt(dto.getCreated_at())
+                            .updatedAt(dto.getUpdated_at())
+                            .labels(
+                                    dto.getLabels() == null
+                                            ? ""
+                                            : dto.getLabels()
+                                            .stream()
+                                            .map(GitHubLabelDto::getName)
+                                            .reduce((a, b) -> a + "," + b)
+                                            .orElse("")
+                            )
+                            .build())
+                    .toList();
+            issueRepository.saveAll(issues);
+        }
     }
 }
