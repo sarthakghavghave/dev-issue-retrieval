@@ -13,7 +13,14 @@ public class IssueController {
 
     @GetMapping("/fetch")
     public String fetchIssues() {
-        issueService.fetchAndSaveIssues();
+        issueService.fetchIncrementalIssues();
         return "Issues fetched successfully";
+    }
+
+    // Temporary endpoint for historical backfill
+    @GetMapping("/backfill")
+    public String backfillIssues() {
+        issueService.fetchHistoricalIssues();
+        return "Historical backfill completed";
     }
 }

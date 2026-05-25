@@ -1,12 +1,13 @@
 package com.devissueretrieval.client;
 
 import com.devissueretrieval.dto.GitHubIssueDto;
+import com.devissueretrieval.dto.GitHubCommentDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
-//import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,14 +30,37 @@ public class GitHubClient {
             "postgres/postgres"
     );
 
-    public List<GitHubIssueDto> fetchIssues(String repository) {
+    public List<GitHubCommentDto> fetchComments(String commentsUrl) {
 
-        String url = "https://api.github.com/repos/" + repository + "/issues";
+        RequestEntity<Void> request = RequestEntity
+                .get(URI.create(commentsUrl))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + githubToken)
+                .build();
+
+        return restTemplate.exchange(
+                request,
+                new ParameterizedTypeReference<List<GitHubCommentDto>>() {}
+        ).getBody();
+    }
+
+    public List<GitHubIssueDto> fetchIssues(String repository, int page) {
+
+        String url = "https://api.github.com/repos/" + repository + "/issues?state=all&per_page=100&page=" + page;
+        // state=all -> open/closed/resolved issues
+        // per_page=100 -> GitHub maximum allowed page size
 
         RequestEntity<Void> request = RequestEntity
                 .get(URI.create(url))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + githubToken)
                 .build();
+
+        ResponseEntity<List<GitHubIssueDto>> response =
+                restTemplate.exchange(
+                        request,
+                        new ParameterizedTypeReference<List<GitHubIssueDto>>() {}
+                );
+
+        System.out.println("GitHub API Remaining Requests: " + response.getHeaders().getFirst("X-RateLimit-Remaining"));
 
         return restTemplate.exchange(
                 request,

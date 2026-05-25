@@ -20,6 +20,8 @@ public class Issue {
 
     @Column(unique = true)
     private Long githubIssueId;
+
+    @Column(columnDefinition = "TEXT")
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -27,7 +29,14 @@ public class Issue {
 
     @Column(columnDefinition = "TEXT")
     private String comments;
+
+    @Column(columnDefinition = "TEXT")
+    private String commentsUrl;
+    private Boolean commentsEnriched;
+
     private String repositoryName;
+
+    @Column(columnDefinition = "TEXT")
     private String issueUrl;
 
     @Column(columnDefinition = "TEXT")

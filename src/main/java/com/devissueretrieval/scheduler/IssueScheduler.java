@@ -13,10 +13,10 @@ public class IssueScheduler {
 
     private final IssueService issueService;
 
-    @Scheduled(fixedRate = 60000) // 1 min. 6 hr = 21600000 ms
+//    @Scheduled(fixedRate = 60000) // 1 min. 6 hr = 21600000 ms
     public void scheduleIssueIngestion() {
         log.info("Starting scheduled GitHub issue ingestion...");
-        issueService.fetchAndSaveIssues();
+        issueService.fetchIncrementalIssues();
         log.info("Issue ingestion completed.");
     }
 }
