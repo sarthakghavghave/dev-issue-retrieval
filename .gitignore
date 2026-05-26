@@ -1,8 +1,15 @@
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
+backend/.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+backend/target/
+
+### Python Environment ###
+nlp-service/venv/
+__pycache__/
+*.pyc
+*.csv
 
 ### STS ###
 .apt_generated
@@ -14,6 +21,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
+backend/.idea
 .idea
 *.iws
 *.iml
@@ -32,4 +40,4 @@ build/
 ### VS Code ###
 .vscode/
 
-src/main/resources/application-local.properties
+backend/src/main/resources/application-local.properties
