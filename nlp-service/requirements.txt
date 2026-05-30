@@ -4,3 +4,6 @@ sqlalchemy
 bs4
 tqdm
 psycopg2-binary
+sentence-transformers
+faiss-cpu
+pyarrow
