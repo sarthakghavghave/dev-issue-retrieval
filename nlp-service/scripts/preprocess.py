@@ -1,9 +1,13 @@
 import re
 import pandas as pd
 
+from pathlib import Path
 from bs4 import BeautifulSoup
 from sqlalchemy import create_engine
 from tqdm import tqdm
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+CSV_PATH = BASE_DIR / "data/processed/cleaned_issues.csv"
 
 DB_URL = "postgresql://postgres:JayData%405432@localhost:5432/dev_issue_retrieval"
 
@@ -22,41 +26,62 @@ FROM issues
 df = pd.read_sql(query, engine)
 print(f"\nLoaded rows: {len(df)}")
 
-NOISE_PATTERNS = [
-    "dependabot",
+NOISE_TITLE_PATTERNS = [
     "forward port",
-    "upgrade to ",
+    "upgrade to",
     "bump ",
-    "release",
+    "dependabot",
+    "license file",
     "license header",
-    "version bump",
-    "changelog"
+    "changelog",
+    "release notes",
+    "release announcement",
+    "documentation",
+    "docs:",
+    "correct the name",
+    "update license",
+    "rename ",
+    "renames ",
+    "license",
+    "licence",
+    "copyright",
+    "changelog",
+    "release notes",
+    "markdown docs",
+    "document ",
+    "documented ",
+    "typo",
+    "test ",
+    "integration test",
+    "null check",
+    "line endings",
+    "license",
+    "licence",
+    "rename ",
+    "polish code",
+    "forward port",
+    "bump ",
+    "upgrade to"
 ]
 
+NOISE_LABEL_PREFIXES = [
+    "status:",
+    "for:",
+    "priority:",
+    "team:"
+]
+
+
 NOISE_LABELS = {
-    "team-only",
+    "task",
+    "documentation",
     "dependency-upgrade",
-    "forward-port"
+    "forward-port",
+    "team-only",
+    "duplicate",
+    "invalid",
+    "superseded"
 }
-
-LOW_VALUE_PREFIXES = {
-    "document ",
-    "docs ",
-    "documentation ",
-    "rename ",
-    "cleanup ",
-    "changelog "
-}
-
-# USEFUL_LABEL_BLACKLIST = {
-#     "waiting-for-triage",
-#     "triage",
-#     "status: waiting-for-triage",
-#     "status: declined",
-#     "status: duplicate",
-#     "status: invalid",
-#     "status: superseded"
-# }
 
 def clean_text(text):
     if pd.isna(text):
@@ -94,53 +119,40 @@ def clean_text(text):
 def filter_labels(labels):
     if pd.isna(labels):
         return ""
-    useful = []
 
+    useful = []
     for label in labels.split(","):
         label = re.sub(r'\\s+', ' ', label.strip().lower())
 
         # remove workflow labels
-        if (label.startswith("status:")
-            or label.startswith("for:")
-            or label.startswith("team:")
-            or label.startswith("priority:")
+        if any(
+                label.startswith(prefix)
+                for prefix in NOISE_LABEL_PREFIXES
         ):
             continue
 
         # remove low semantic labels
-        if label in {
-            "task",
-            "duplicate",
-            "invalid",
-            "question",
-            "documentation"
-        }:
+        if label in NOISE_LABELS:
             continue
 
         useful.append(label)
 
     return " ".join(useful)
 
-def is_noise(title, labels):
-    combined = f"{title} {labels}".lower()
-    if any(pattern in combined for pattern in NOISE_PATTERNS):
+def is_noise(title, labels, body):
+    title_lower = title.lower()
+    if any(pattern in title_lower for pattern in NOISE_TITLE_PATTERNS):
         return True
 
-    label_set = {
-        label.strip().lower()
-        for label in labels.split(",")
-    }
-
-    if any(label in label_set for label in NOISE_LABELS):
+    body_lower = body.lower()
+    if body_lower.startswith("forward port of issue"):
         return True
-
-    if any(combined.startswith(prefix) for prefix in LOW_VALUE_PREFIXES):
+    if body_lower.startswith("upgrade to "):
         return True
 
     return False
 
 processed_rows = []
-
 for _, row in tqdm(df.iterrows(), total=len(df)):
 
     title = clean_text(row["title"])
@@ -148,7 +160,7 @@ for _, row in tqdm(df.iterrows(), total=len(df)):
     labels = filter_labels(row["labels"])
 
     # skip noisy maintenance issues
-    if is_noise(title, labels):
+    if is_noise(title, labels, body):
         continue
 
     # skip useless entries
@@ -177,6 +189,11 @@ Body:
     })
 
 processed_df = pd.DataFrame(processed_rows)
+processed_df = processed_df.drop_duplicates(subset=["title", "repository_name"])
+processed_df = processed_df.fillna("")
+
 print(f"\nRemaining rows after filtering: {len(processed_df)}")
-processed_df.to_csv("cleaned_issues.csv", index=False, encoding="utf-8-sig", quoting=1)
-print("\nPreprocessing completed.")
+processed_df.to_csv(CSV_PATH, index=False, encoding="utf-8-sig", quoting=1)
+print("\nPreprocessing completed.\n")
+
+print(processed_df["title"].str.lower().value_counts().head(50))
