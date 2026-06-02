@@ -5,8 +5,8 @@ import pandas as pd
 import faiss
 from pathlib import Path
 
-TOP_K = 20
-FINAL_K = 10
+TOP_K = 5
+FINAL_K = 5
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,6 +25,7 @@ metadata = metadata.fillna("")
 class SearchRequest(BaseModel):
     query: str
 
+print("Query received:", request.query)
 @app.post("/search")
 def search(request: SearchRequest):
 
@@ -48,6 +49,7 @@ def search(request: SearchRequest):
 
         candidates.append(row)
 
+    print("FAISS complete")
     rerank_scores = reranker.predict(pairs)
 
     ranked = sorted(
@@ -56,6 +58,7 @@ def search(request: SearchRequest):
         reverse=True
     )
 
+    print("Reranking complete")
     results = []
     for row, score in ranked[:FINAL_K]:
         if score >= 5:
