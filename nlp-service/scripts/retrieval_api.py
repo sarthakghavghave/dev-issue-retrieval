@@ -59,18 +59,20 @@ def search(request: SearchRequest):
     results = []
     for row, score in ranked[:FINAL_K]:
         if score >= 5:
-            relevance = "High Relevance"
+            relevance = "Top Match"
         elif score >= 2:
-            relevance = "Relevant"
+            relevance = "Strong Match"
         else:
-            relevance = "Possible Match"
+            relevance = "Related Issue"
 
         results.append({
             "title": row["title"],
             "repository": row["repository_name"],
             "url": row["issue_url"],
             "created_at": row["created_at"],
-            "preview": row["body"][:200],
+            "body": row["body"][:200],
+            "labels": row["labels"],
+            "score": float(score),
             "relevance": relevance
         })
 

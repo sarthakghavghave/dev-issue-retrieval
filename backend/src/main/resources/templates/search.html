@@ -8,12 +8,36 @@
 <body>
 <div class="container">
 
+    <div th:replace="fragments/navbar :: mainNavbar"></div>
+
     <div class="hero">
         <h1>Developer Issue Retrieval</h1>
         <p>
             Search semantically across thousands of GitHub issues
             using embeddings and reranking.
         </p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-value">5490</div>
+            <div class="stat-label">Issues Indexed</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Repositories</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value">FAISS</div>
+            <div class="stat-label">Semantic Retrieval</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value">Cross Encoder</div>
+            <div class="stat-label">Reranking</div>
+        </div>
     </div>
 
     <div class="search-box">
@@ -27,9 +51,42 @@
         </button>
     </div>
 
+    <div class="filters">
+        <select id="repoFilter">
+            <option value="">All Repositories</option>
+            <option value="spring-projects/spring-boot">Spring Boot</option>
+            <option value="docker/compose">Docker Compose</option>
+            <option value="apache/kafka">Apache Kafka</option>
+        </select>
+
+        <select id="sortFilter">
+            <option value="relevance">Best Match</option>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+        </select>
+    </div>
+
     <div id="loading" class="loading"></div>
     <div id="resultCount"></div>
     <div id="results"></div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+
+        <span id="closeModal">&times;</span>
+        <h2 id="modalTitle"></h2>
+        <p id="modalRepo"></p>
+        <p id="modalDate"></p>
+
+        <div id="modalLabels"></div>
+
+        <p id="modalBody"></p>
+        <a id="modalLink"
+           target="_blank">
+            Open GitHub Issue
+        </a>
+    </div>
 </div>
 
 <script>
@@ -39,20 +96,62 @@
         const loading = document.getElementById("loading");
         loading.innerHTML = "Searching...";
 
-        const query = document.getElementById("query").value;
+        const query = document.getElementById("query").value || "";
+        if (!query.trim()) {
+            loading.innerHTML = "";
+            document.getElementById('resultCount').innerText = "Please enter a search query.";
+            return;
+        }
+
         const response = await fetch("/api/search?query=" + encodeURIComponent(query));
+        const repo = document.getElementById("repoFilter").value;
+        const sort = document.getElementById("sortFilter").value;
 
         const data = await response.json();
         loading.innerHTML = "";
         const container = document.getElementById("results");
         container.innerHTML = "";
 
-        document.getElementById("resultCount").innerHTML = `Found ${data.length} relevant issues`;
+        let filtered = data || [];
 
-        data.forEach(item => {
+        if(repo){
+            filtered = filtered.filter(
+                x => x.repository === repo
+            );
+        }
+
+        if(sort === "newest"){
+            filtered.sort(
+                (a,b) =>
+                new Date(b.created_at) -
+                new Date(a.created_at)
+            );
+        }
+
+        if(sort === "oldest"){
+            filtered.sort(
+                (a,b) =>
+                new Date(a.created_at) -
+                new Date(b.created_at)
+            );
+        }
+
+        document.getElementById('resultCount').innerText = `${filtered.length} results`;
+
+        if(filtered.length === 0){
+            container.innerHTML = '<div class="result-card">No results found. Try a different query or remove filters.</div>';
+            return;
+        }
+
+        filtered.forEach(item => {
+            const preview = item.body ? (item.body.length > 300 ? item.body.substring(0,300) + '...' : item.body) : 'No description available';
+
+            // Escape potential backticks in the serialized JSON for safe inlining
+            const safeItem = JSON.stringify(item).replace(/`/g, '\\`');
+
             container.innerHTML += `
 
-            <div class="result-card">
+            <div class="result-card" onclick='showModal(${safeItem})'>
                 <div class="result-header">
                     <div class="result-title">
                         ${item.title}
@@ -63,8 +162,17 @@
                     </div>
                 </div>
 
-                <div class="repo">
+                <div class="repo-badge">
                     ${item.repository}
+                </div>
+
+                <div class="labels">
+                    ${item.labels
+                        ? item.labels.split(",")
+                            .map(label => `<span class="tag">${label}</span>`)
+                            .join("")
+                        : ""
+                    }
                 </div>
 
                 <div class="date">
@@ -72,7 +180,7 @@
                 </div>
 
                 <div class="preview">
-                    ${item.preview}
+                    ${preview}
                 </div>
 
                 <a
@@ -88,6 +196,30 @@
         });
     }
 
+    function showModal(result){
+
+        document.getElementById("modalTitle").innerText = result.title || 'No title';
+        document.getElementById("modalRepo").innerText = result.repository || '';
+        document.getElementById("modalDate").innerText = "Opened: " + (result.created_at || 'unknown');
+        document.getElementById("modalBody").innerText = result.body || 'No description available';
+        document.getElementById("modalLink").href = result.url || '#';
+        document.getElementById("modal").style.display = "block";
+        document.getElementById("modalLabels").innerHTML = result.labels ? result.labels
+                                                                                .split(",")
+                                                                                .map(label => `<span class="tag">${label}</span>`)
+                                                                                .join("") : "";
+
+    }
+
+    document.getElementById("closeModal").onclick = () => {
+        document.getElementById("modal").style.display = "none";
+    };
+
+    // allow Enter to trigger search
+    const queryInput = document.getElementById('query');
+    if(queryInput){
+        queryInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') search(); });
+    }
 </script>
 
 </body>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Architecture</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <div th:replace="fragments/navbar :: mainNavbar"></div>
+
+    <div class="container">
+        <h1 style="text-align:center;">System Architecture</h1>
+
+        <div class="architecture-box">
+            <div class="arch-step">GitHub Issues</div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-step">Preprocessing</div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-step">BGE Embeddings</div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-step">FAISS Retrieval</div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-step">Cross-Encoder Rerank</div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-step">FastAPI Service</div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-step">Spring Boot UI</div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -10,4 +10,9 @@ public class SearchPageController {
     public String home() {
         return "search";
     }
+
+    @GetMapping("/architecture")
+    public String architecture() {
+        return "architecture";
+    }
 }

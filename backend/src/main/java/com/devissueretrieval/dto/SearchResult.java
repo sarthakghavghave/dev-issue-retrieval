@@ -8,7 +8,8 @@ public class SearchResult {
     private String repository;
     private String url;
     private Double score;
-    private String preview;
+    private String body;
+    private String labels;
     private String relevance;
     private String created_at;
 
@@ -52,12 +53,12 @@ public class SearchResult {
         this.created_at = created_at;
     }
 
-    public String getPreview() {
-        return preview;
+    public String getBody() {
+        return body;
     }
 
-    public void setPreview(String preview) {
-        this.preview = preview;
+    public void setBody(String body) {
+        this.body = body;
     }
 
     public String getRelevance() {
@@ -66,5 +67,13 @@ public class SearchResult {
 
     public void setRelevance(String relevance) {
         this.relevance = relevance;
+    }
+
+    public String getLabels() {
+        return labels;
+    }
+
+    public void setLabels(String labels) {
+        this.labels = labels;
     }
 }
