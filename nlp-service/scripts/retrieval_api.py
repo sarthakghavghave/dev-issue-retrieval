@@ -25,15 +25,16 @@ metadata = metadata.fillna("")
 class SearchRequest(BaseModel):
     query: str
 
-print("Query received:", request.query)
 @app.post("/search")
 def search(request: SearchRequest):
 
+    print("Query received:", request.query)
     query_embedding = embedder.encode(
         [request.query],
         normalize_embeddings=True
     )
 
+    print("FAISS starting")
     scores, indices = index.search(query_embedding, TOP_K)
 
     pairs = []
