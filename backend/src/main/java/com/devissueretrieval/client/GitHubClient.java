@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GitHubClient {
 
-    @Value("${github.token}")
+    @Value("${github.token:dummy}")
     private String githubToken;
 
     private final RestTemplate restTemplate = new RestTemplate();
