@@ -19,7 +19,7 @@ public class RetrievalService {
 
         ResponseEntity<SearchResult[]> response =
                 restTemplate.postForEntity(
-                        "http://localhost:8000/search",
+                        "http://nlp-service:8000/search",
                         request,
                         SearchResult[].class
                 );

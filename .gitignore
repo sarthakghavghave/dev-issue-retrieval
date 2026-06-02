@@ -9,8 +9,7 @@ backend/target/
 nlp-service/venv/
 __pycache__/
 *.pyc
-*.csv
-data/
+*.npy
 
 ### STS ###
 .apt_generated
