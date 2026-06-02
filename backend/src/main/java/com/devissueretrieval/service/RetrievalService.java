@@ -7,14 +7,15 @@ import com.devissueretrieval.dto.SearchResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class RetrievalService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
-
     @Value("${retrieval.api.url}")
     private String retrievalApiUrl;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public List<SearchResult> search(String query) {
 
