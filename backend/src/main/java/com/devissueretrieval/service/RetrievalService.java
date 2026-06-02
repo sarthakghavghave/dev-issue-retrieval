@@ -12,6 +12,10 @@ import org.springframework.http.ResponseEntity;
 public class RetrievalService {
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${retrieval.api.url}")
+    private String retrievalApiUrl;
+
     public List<SearchResult> search(String query) {
 
         SearchRequest request = new SearchRequest();
@@ -19,7 +23,7 @@ public class RetrievalService {
 
         ResponseEntity<SearchResult[]> response =
                 restTemplate.postForEntity(
-                        "http://nlp-service:8000/search",
+                        retrievalApiUrl,
                         request,
                         SearchResult[].class
                 );
