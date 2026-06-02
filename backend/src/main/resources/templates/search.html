@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Developer Issue Retrieval</title>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="hero">
+        <h1>Developer Issue Retrieval</h1>
+        <p>
+            Search semantically across thousands of GitHub issues
+            using embeddings and reranking.
+        </p>
+    </div>
+
+    <div class="search-box">
+        <input
+                id="query"
+                placeholder="Describe your issue..."
+        >
+
+        <button onclick="search()">
+            Search
+        </button>
+    </div>
+
+    <div id="loading" class="loading"></div>
+    <div id="resultCount"></div>
+    <div id="results"></div>
+</div>
+
+<script>
+
+    async function search() {
+
+        const loading = document.getElementById("loading");
+        loading.innerHTML = "Searching...";
+
+        const query = document.getElementById("query").value;
+        const response = await fetch("/api/search?query=" + encodeURIComponent(query));
+
+        const data = await response.json();
+        loading.innerHTML = "";
+        const container = document.getElementById("results");
+        container.innerHTML = "";
+
+        document.getElementById("resultCount").innerHTML = `Found ${data.length} relevant issues`;
+
+        data.forEach(item => {
+            container.innerHTML += `
+
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="result-title">
+                        ${item.title}
+                    </div>
+
+                    <div class="relevance">
+                        ${item.relevance}
+                    </div>
+                </div>
+
+                <div class="repo">
+                    ${item.repository}
+                </div>
+
+                <div class="date">
+                    Opened ${item.created_at}
+                </div>
+
+                <div class="preview">
+                    ${item.preview}
+                </div>
+
+                <a
+                    class="open-link"
+                    href="${item.url}"
+                    target="_blank">
+
+                    View GitHub Issue →
+
+                </a>
+            </div>
+            `;
+        });
+    }
+
+</script>
+
+</body>
+</html>

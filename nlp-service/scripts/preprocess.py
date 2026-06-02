@@ -19,7 +19,8 @@ SELECT
     title,
     body,
     labels,
-    issue_url
+    issue_url,
+    created_at
 FROM issues
 """
 
@@ -158,6 +159,7 @@ for _, row in tqdm(df.iterrows(), total=len(df)):
     title = clean_text(row["title"])
     body = clean_text(row["body"])
     labels = filter_labels(row["labels"])
+    date = row["created_at"].strftime('%Y-%m-%d')
 
     # skip noisy maintenance issues
     if is_noise(title, labels, body):
@@ -185,6 +187,7 @@ Body:
         "labels": labels,
         "body": body,
         "issue_url": row["issue_url"],
+        "created_at": date,
         "retrieval_text": retrieval_text.strip()
     })
 
@@ -195,5 +198,3 @@ processed_df = processed_df.fillna("")
 print(f"\nRemaining rows after filtering: {len(processed_df)}")
 processed_df.to_csv(CSV_PATH, index=False, encoding="utf-8-sig", quoting=1)
 print("\nPreprocessing completed.\n")
-
-print(processed_df["title"].str.lower().value_counts().head(50))

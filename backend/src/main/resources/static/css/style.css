@@ -1,0 +1,129 @@
+body {
+    margin: 0;
+    font-family: Inter, Arial, sans-serif;
+    background: #f7f8fa;
+    color: #1f2937;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 60px auto;
+    padding: 20px;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.hero h1 {
+    margin-bottom: 10px;
+    font-size: 42px;
+}
+
+.hero p {
+    color: #6b7280;
+    font-size: 16px;
+}
+
+.search-box {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.search-box button {
+    border: none;
+    border-radius: 10px;
+    background: #111827;
+    color: white;
+    padding: 16px 24px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.search-box button:hover {
+    background: #1f2937;
+}
+
+.result-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.result-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.score-badge {
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+#resultCount {
+    margin-bottom: 20px;
+    color: #6b7280;
+}
+
+.relevance {
+    background: #ecfdf5;
+    color: #065f46;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.date {
+    color: #6b7280;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.preview {
+    margin-top: 12px;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.repo {
+    margin-top: 10px;
+    color: #6b7280;
+}
+
+.open-link {
+    display: inline-block;
+    margin-top: 15px;
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: 500;
+}
+
+.open-link:hover {
+    text-decoration: underline;
+}
+
+.loading {
+    text-align: center;
+    margin-top: 20px;
+}

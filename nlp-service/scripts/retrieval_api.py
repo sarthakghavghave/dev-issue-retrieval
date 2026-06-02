@@ -33,10 +33,7 @@ def search(request: SearchRequest):
         normalize_embeddings=True
     )
 
-    scores, indices = index.search(
-        query_embedding,
-        TOP_K
-    )
+    scores, indices = index.search(query_embedding, TOP_K)
 
     pairs = []
     candidates = []
@@ -61,11 +58,20 @@ def search(request: SearchRequest):
 
     results = []
     for row, score in ranked[:FINAL_K]:
+        if score >= 5:
+            relevance = "High Relevance"
+        elif score >= 2:
+            relevance = "Relevant"
+        else:
+            relevance = "Possible Match"
+
         results.append({
             "title": row["title"],
             "repository": row["repository_name"],
             "url": row["issue_url"],
-            "score": float(score)
+            "created_at": row["created_at"],
+            "preview": row["body"][:200],
+            "relevance": relevance
         })
 
     return results
