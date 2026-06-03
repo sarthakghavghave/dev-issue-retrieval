@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir \
     torch==2.7.1 \
     --index-url https://download.pytorch.org/whl/cpu
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-render.txt
 
 COPY . .
 
