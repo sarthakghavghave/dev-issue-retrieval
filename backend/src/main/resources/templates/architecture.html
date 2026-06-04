@@ -9,23 +9,83 @@
     <div th:replace="fragments/navbar :: mainNavbar"></div>
 
     <div class="container">
-        <h1 style="text-align:center;">System Architecture</h1>
-
-        <div class="architecture-box">
-            <div class="arch-step">GitHub Issues</div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-step">Preprocessing</div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-step">BGE Embeddings</div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-step">FAISS Retrieval</div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-step">Cross-Encoder Rerank</div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-step">FastAPI Service</div>
-            <div class="arch-arrow">→</div>
-            <div class="arch-step">Spring Boot UI</div>
+        <div class="page-header">
+            <h1>System Architecture</h1>
+            <p>Production architecture for semantic search over GitHub issues, combining offline indexing with an online retrieval pipeline and reranking service.</p>
         </div>
+
+        <section class="arch-section">
+            <div class="architecture-columns">
+                <div class="pipeline-column">
+                    <h2>Offline Indexing Pipeline</h2>
+                    <div class="step-list">
+                        <div class="step-card">
+                            <div class="step-title">GitHub Issues</div>
+                            <div class="step-detail">Collect historical issue data from selected repositories and persist the raw issue text and metadata.</div>
+                        </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">PostgreSQL Storage</div>
+                            <div class="step-detail">Store issue records and metadata in PostgreSQL for reliable persistence and query support.</div>
+                        </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">Preprocessing</div>
+                            <div class="step-detail">Clean, normalize, and transform issue content into searchable text representations.</div>
+                        </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">Embedding Generation</div>
+                            <div class="step-detail">Generate dense vector embeddings using a sentence transformer model for semantic similarity.</div>
+                        </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">FAISS Index Creation</div>
+                            <div class="step-detail">Build and persist a FAISS vector index with associated issue metadata for fast retrieval.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pipeline-column">
+                    <h2>Online Retrieval Pipeline</h2>
+                    <div class="step-list">
+                        <div class="step-card">
+                            <div class="step-title">Spring Boot UI</div>
+                            <div class="step-detail">Users submit natural language search queries through the web interface.</div>
+                        </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">FastAPI Retrieval Service</div>
+                            <div class="step-detail">The frontend queries the retrieval API with the user request.</div>
+                        </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">Query Embedding</div>
+                            <div class="step-detail">Convert the incoming query into a dense embedding that matches the indexed issue vectors.</div>
+                        </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">FAISS Candidate Retrieval</div>
+                            <div class="step-detail">Retrieve the top candidate issue vectors from the FAISS index based on similarity.</div>
+                        </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">Cross-Encoder Reranking</div>
+                            <div class="step-detail">Refine candidate ranking with a cross-encoder model to improve relevance ordering.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="arch-summary">
+            <h3>Architecture Summary</h3>
+            <ul>
+                <li>Offline indexing builds a persistent FAISS vector store from cleaned GitHub issue data and embeddings.</li>
+                <li>The online pipeline transforms user queries to vectors, retrieves candidates from FAISS, and reranks them.</li>
+                <li>Results include issue metadata, labels, repository information and source links for user exploration.</li>
+                <li>This separation of offline indexing and online retrieval enables fast query response times.</li>
+            </ul>
+        </section>
     </div>
 
 </body>

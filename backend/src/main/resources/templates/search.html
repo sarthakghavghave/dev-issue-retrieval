@@ -6,10 +6,9 @@
 </head>
 
 <body>
+<div th:replace="fragments/navbar :: mainNavbar"></div>
+
 <div class="container">
-
-    <div th:replace="fragments/navbar :: mainNavbar"></div>
-
     <div class="hero">
         <h1>Developer Issue Retrieval</h1>
         <p>
@@ -19,22 +18,22 @@
     </div>
 
     <div class="stats">
-        <div class="stat-card">
+        <div class="stat-card" title="The vector search space includes 5490 indexed GitHub issues." data-tooltip="The vector search space includes 5490 indexed GitHub issues.">
             <div class="stat-value">5490</div>
             <div class="stat-label">Issues Indexed</div>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card" title="Search covers 3 repositories stored in the issue index." data-tooltip="Search covers 3 repositories stored in the issue index.">
             <div class="stat-value">3</div>
             <div class="stat-label">Repositories</div>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card" title="FAISS is used for fast semantic retrieval over issue embeddings." data-tooltip="FAISS is used for fast semantic retrieval over issue embeddings.">
             <div class="stat-value">FAISS</div>
             <div class="stat-label">Semantic Retrieval</div>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card" title="A TinyBERT cross-encoder reranks the top candidates for best relevance." data-tooltip="A TinyBERT cross-encoder reranks the top candidates for best relevance.">
             <div class="stat-value">Cross Encoder</div>
             <div class="stat-label">Reranking</div>
         </div>
