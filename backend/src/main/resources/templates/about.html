@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="/css/style.css">
+    <title>About - Developer Issue Retrieval</title>
+</head>
+
+<body>
+<div th:replace="fragments/navbar :: mainNavbar"></div>
+
+<div class="container">
+    <div class="about-hero">
+        <h1>About Developer Issue Retrieval</h1>
+        <p class="subtitle">Intelligent semantic search across GitHub issues</p>
+    </div>
+
+    <div class="about-grid">
+        <div class="about-card">
+            <div class="about-icon">🔍</div>
+            <h3>Semantic Search</h3>
+            <p>Our system uses advanced embeddings and machine learning to understand the semantic meaning of your queries, going beyond simple keyword matching to find truly relevant issues.</p>
+        </div>
+
+        <div class="about-card">
+            <div class="about-icon">⚡</div>
+            <h3>Fast Retrieval</h3>
+            <p>Powered by FAISS (Facebook AI Similarity Search), we deliver lightning-fast results across thousands of indexed GitHub issues with minimal latency.</p>
+        </div>
+
+        <div class="about-card">
+            <div class="about-icon">🎯</div>
+            <h3>Intelligent Ranking</h3>
+            <p>A TinyBERT cross-encoder model reranks search results to ensure the most relevant issues appear at the top, fine-tuned for developer workflows.</p>
+        </div>
+
+        <div class="about-card">
+            <div class="about-icon">📊</div>
+            <h3>Comprehensive Index</h3>
+            <p>We maintain a live index of GitHub issues from major repositories including Spring Boot, Apache Kafka, Kubernetes, Docker Compose, and PostgreSQL, refreshed continuously by our incremental ingestion pipeline.</p>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>How It Works</h2>
+        <div class="tech-stack">
+            <div class="tech-step">
+                <span class="step-number">1</span>
+                <div>
+                    <h4>Query Processing</h4>
+                    <p>Your search query is converted into semantic embeddings using advanced NLP models.</p>
+                </div>
+            </div>
+
+            <div class="tech-step">
+                <span class="step-number">2</span>
+                <div>
+                    <h4>Vector Search</h4>
+                    <p>FAISS performs efficient similarity search across indexed issue embeddings to find top candidates.</p>
+                </div>
+            </div>
+
+            <div class="tech-step">
+                <span class="step-number">3</span>
+                <div>
+                    <h4>Reranking</h4>
+                    <p>A cross-encoder model reranks the results for better precision and relevance.</p>
+                </div>
+            </div>
+
+            <div class="tech-step">
+                <span class="step-number">4</span>
+                <div>
+                    <h4>Results Display</h4>
+                    <p>Ranked results are presented with relevance scores, labels, and full issue descriptions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Technology Stack</h2>
+        <div class="tech-list">
+            <div class="tech-item">
+                <strong>Backend:</strong> Spring Boot, Java
+            </div>
+            <div class="tech-item">
+                <strong>NLP:</strong> TinyBERT, HuggingFace Transformers
+            </div>
+            <div class="tech-item">
+                <strong>Vector DB:</strong> FAISS (Facebook AI Similarity Search)
+            </div>
+            <div class="tech-item">
+                <strong>Frontend:</strong> HTML5, CSS3, Vanilla JavaScript, Thymeleaf
+            </div>
+            <div class="tech-item">
+                <strong>Deployment:</strong> Docker, Docker Compose
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2>Use Cases</h2>
+        <div class="use-case-list">
+            <div class="use-case">
+                <h4>🐛 Bug Investigation</h4>
+                <p>Describe the issue you're facing and find similar bug reports that might contain solutions.</p>
+            </div>
+            <div class="use-case">
+                <h4>💡 Feature Research</h4>
+                <p>Explore how similar features are implemented or discussed across repositories.</p>
+            </div>
+            <div class="use-case">
+                <h4>🔧 Integration Help</h4>
+                <p>Find integration issues and solutions from multiple large projects to guide your implementation.</p>
+            </div>
+            <div class="use-case">
+                <h4>📚 Best Practices</h4>
+                <p>Discover how experienced developers have solved architectural and design problems.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-footer">
+        <h2>Get Started</h2>
+        <p>Head over to the <a href="/" class="link-primary">search page</a> to start exploring issues semantically.</p>
+    </div>
+</div>
+
+<style>
+.about-hero {
+    text-align: center;
+    margin-bottom: 60px;
+    padding: 40px 0;
+}
+
+.about-hero h1 {
+    font-size: 48px;
+    margin-bottom: 12px;
+    color: #0f172a;
+}
+
+.subtitle {
+    font-size: 20px;
+    color: #64748b;
+    margin: 0;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 60px;
+}
+
+.about-card {
+    background: white;
+    padding: 30px 24px;
+    border-radius: 16px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.about-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+}
+
+.about-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.about-card h3 {
+    font-size: 20px;
+    margin: 12px 0;
+    color: #0f172a;
+}
+
+.about-card p {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.about-section {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+    margin-bottom: 32px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.about-section h2 {
+    font-size: 28px;
+    margin-top: 0;
+    margin-bottom: 28px;
+    color: #0f172a;
+}
+
+.tech-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tech-step {
+    display: flex;
+    gap: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    align-items: flex-start;
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.tech-step h4 {
+    margin: 0 0 8px 0;
+    color: #0f172a;
+}
+
+.tech-step p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.tech-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.tech-item {
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid #2563eb;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.use-case-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.use-case {
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.use-case h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.use-case p {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.about-footer {
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #eef4fb 0%, #f0f9ff 100%);
+    border-radius: 16px;
+    margin-top: 40px;
+}
+
+.about-footer h2 {
+    margin-top: 0;
+}
+
+.about-footer p {
+    font-size: 16px;
+    color: #475569;
+}
+
+.link-primary {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.link-primary:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .about-hero h1 {
+        font-size: 36px;
+    }
+
+    .about-section {
+        padding: 24px;
+    }
+
+    .tech-step {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .step-number {
+        align-self: flex-start;
+    }
+}
+</style>
+
+</body>
+</html>

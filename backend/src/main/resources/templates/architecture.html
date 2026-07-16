@@ -43,6 +43,11 @@
                             <div class="step-title">FAISS Index Creation</div>
                             <div class="step-detail">Build and persist a FAISS vector index with associated issue metadata for fast retrieval.</div>
                         </div>
+                        <div class="step-arrow">↓</div>
+                        <div class="step-card">
+                            <div class="step-title">Incremental Ingestion</div>
+                            <div class="step-detail">A scheduled job polls GitHub for issues updated since the last successful run, upserts them in PostgreSQL, and updates the FAISS index with new or changed vectors.</div>
+                        </div>
                     </div>
                 </div>
                 <div class="pipeline-column">
@@ -84,6 +89,7 @@
                 <li>The online pipeline transforms user queries to vectors, retrieves candidates from FAISS, and reranks them.</li>
                 <li>Results include issue metadata, labels, repository information and source links for user exploration.</li>
                 <li>This separation of offline indexing and online retrieval enables fast query response times.</li>
+                <li>Incremental ingestion keeps the index fresh: a Spring scheduler pulls only issues updated since the last run, and the FAISS index is updated in place by the NLP service.</li>
             </ul>
         </section>
     </div>

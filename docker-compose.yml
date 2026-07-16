@@ -15,3 +15,6 @@ services:
       - "8080:8080"
     depends_on:
       - nlp-service
+    environment:
+      - RETRIEVAL_API_URL=http://nlp-service:8000/search
+      - RETRIEVAL_API_UPDATE_URL=http://nlp-service:8000/update-index

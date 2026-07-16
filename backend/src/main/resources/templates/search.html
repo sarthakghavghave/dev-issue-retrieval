@@ -18,14 +18,19 @@
     </div>
 
     <div class="stats">
-        <div class="stat-card" title="The vector search space includes 5490 indexed GitHub issues." data-tooltip="The vector search space includes 5490 indexed GitHub issues.">
-            <div class="stat-value">5490</div>
+        <div class="stat-card" id="issuesStat" title="The vector search space includes live indexed GitHub issues." data-tooltip="The vector search space includes live indexed GitHub issues.">
+            <div class="stat-value" id="issuesValue">—</div>
             <div class="stat-label">Issues Indexed</div>
         </div>
 
-        <div class="stat-card" title="Search covers 3 repositories stored in the issue index." data-tooltip="Search covers 3 repositories stored in the issue index.">
-            <div class="stat-value">3</div>
+        <div class="stat-card" id="reposStat" title="Search covers live repositories stored in the issue index." data-tooltip="Search covers live repositories stored in the issue index.">
+            <div class="stat-value" id="reposValue">—</div>
             <div class="stat-label">Repositories</div>
+        </div>
+
+        <div class="stat-card" id="lastUpdateStat" title="Last time the incremental ingestion ran and refreshed the index." data-tooltip="Last time the incremental ingestion ran and refreshed the index.">
+            <div class="stat-value" id="lastUpdateValue">—</div>
+            <div class="stat-label">Last Ingestion</div>
         </div>
 
         <div class="stat-card" title="FAISS is used for fast semantic retrieval over issue embeddings." data-tooltip="FAISS is used for fast semantic retrieval over issue embeddings.">
@@ -54,8 +59,10 @@
         <select id="repoFilter">
             <option value="">All Repositories</option>
             <option value="spring-projects/spring-boot">Spring Boot</option>
-            <option value="docker/compose">Docker Compose</option>
             <option value="apache/kafka">Apache Kafka</option>
+            <option value="kubernetes/kubernetes">Kubernetes</option>
+            <option value="docker/compose">Docker Compose</option>
+            <option value="postgres/postgres">PostgreSQL</option>
         </select>
 
         <select id="sortFilter">
@@ -72,19 +79,28 @@
 
 <div id="modal" class="modal">
     <div class="modal-content">
+        <button id="closeModal" class="close-btn">&times;</button>
 
-        <span id="closeModal">&times;</span>
-        <h2 id="modalTitle"></h2>
-        <p id="modalRepo"></p>
-        <p id="modalDate"></p>
+        <div class="modal-header">
+            <h2 id="modalTitle"></h2>
+            <div class="modal-meta">
+                <span id="modalRepo" class="repo-badge-modal"></span>
+                <span id="modalDate" class="date-badge"></span>
+            </div>
+        </div>
 
-        <div id="modalLabels"></div>
+        <div id="modalLabels" class="modal-labels"></div>
 
-        <p id="modalBody"></p>
-        <a id="modalLink"
-           target="_blank">
-            Open GitHub Issue
-        </a>
+        <div class="modal-body-section">
+            <h3>Description</h3>
+            <p id="modalBody" class="modal-body-text"></p>
+        </div>
+
+        <div class="modal-footer">
+            <a id="modalLink" class="btn-github" target="_blank" rel="noopener noreferrer">
+                🔗 Open on GitHub
+            </a>
+        </div>
     </div>
 </div>
 
@@ -196,29 +212,111 @@
     }
 
     function showModal(result){
-
         document.getElementById("modalTitle").innerText = result.title || 'No title';
-        document.getElementById("modalRepo").innerText = result.repository || '';
+        document.getElementById("modalRepo").innerText = result.repository || 'Unknown Repository';
         document.getElementById("modalDate").innerText = "Opened: " + (result.created_at || 'unknown');
-        document.getElementById("modalBody").innerText = result.body || 'No description available';
-        document.getElementById("modalLink").href = result.url || '#';
-        document.getElementById("modal").style.display = "block";
-        document.getElementById("modalLabels").innerHTML = result.labels ? result.labels
-                                                                                .split(",")
-                                                                                .map(label => `<span class="tag">${label}</span>`)
-                                                                                .join("") : "";
 
+        // Display full body with line breaks
+        const bodyText = (result.body || 'No description available').trim();
+        document.getElementById("modalBody").innerHTML = bodyText
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br>');
+
+        document.getElementById("modalLink").href = result.url || '#';
+        document.getElementById("modalLink").innerText = '🔗 Open on GitHub';
+        document.getElementById("modal").style.display = "block";
+
+        // Display labels with better styling
+        const labelsHtml = result.labels ? result.labels
+            .split(",")
+            .filter(label => label.trim())
+            .map(label => `<span class="tag">${label.trim()}</span>`)
+            .join("") : "<span class='tag-empty'>No labels</span>";
+        document.getElementById("modalLabels").innerHTML = labelsHtml || '';
+
+        // Close on background click
+        document.getElementById("modal").onclick = (e) => {
+            if(e.target.id === 'modal') {
+                document.getElementById("modal").style.display = "none";
+            }
+        };
     }
 
     document.getElementById("closeModal").onclick = () => {
         document.getElementById("modal").style.display = "none";
     };
 
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+        if(e.key === 'Escape') {
+            document.getElementById("modal").style.display = "none";
+        }
+    });
+
+    function setQuery(text) {
+        const input = document.getElementById('query');
+        input.value = text;
+        search();
+    }
+
     // allow Enter to trigger search
     const queryInput = document.getElementById('query');
     if(queryInput){
         queryInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') search(); });
     }
+
+    // --- Live stats: pull real-time issue & repository counts from the backend ---
+    async function refreshStats() {
+        try {
+            const response = await fetch("/api/stats", { cache: "no-store" });
+            if (!response.ok) throw new Error("Stats endpoint returned " + response.status);
+            const data = await response.json();
+
+            const issuesEl = document.getElementById("issuesValue");
+            const reposEl = document.getElementById("reposValue");
+            const lastEl = document.getElementById("lastUpdateValue");
+
+            if (issuesEl && typeof data.issueCount === "number") {
+                issuesEl.innerText = data.issueCount.toLocaleString();
+            }
+            if (reposEl && typeof data.repositoryCount === "number") {
+                reposEl.innerText = data.repositoryCount.toLocaleString();
+            }
+            if (lastEl && data.lastIngestionAt) {
+                const suffix = data.schedulerRunning ? " (in progress)" : "";
+                lastEl.innerText = data.lastIngestionAt.replace("T", " ") + suffix;
+            }
+
+            const issuesCard = document.getElementById("issuesStat");
+            if (issuesCard) {
+                issuesCard.setAttribute(
+                    "title",
+                    `The vector search space includes ${data.issueCount} indexed GitHub issues (live).`
+                );
+                issuesCard.setAttribute(
+                    "data-tooltip",
+                    `The vector search space includes ${data.issueCount} indexed GitHub issues (live).`
+                );
+            }
+            const reposCard = document.getElementById("reposStat");
+            if (reposCard) {
+                reposCard.setAttribute(
+                    "title",
+                    `Search covers ${data.repositoryCount} repositories stored in the issue index (live).`
+                );
+                reposCard.setAttribute(
+                    "data-tooltip",
+                    `Search covers ${data.repositoryCount} repositories stored in the issue index (live).`
+                );
+            }
+        } catch (err) {
+            console.warn("Could not refresh stats:", err);
+        }
+    }
+
+    refreshStats();
+    setInterval(refreshStats, 30000);
 </script>
 
 </body>
