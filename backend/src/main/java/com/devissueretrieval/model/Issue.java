@@ -43,6 +43,6 @@ public class Issue {
     private String labels;
     private String source;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private java.time.Instant createdAt;
+    private java.time.Instant updatedAt;
 }

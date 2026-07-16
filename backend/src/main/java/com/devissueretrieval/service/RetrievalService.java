@@ -23,12 +23,21 @@ public class RetrievalService {
         request.setQuery(query);
 
         ResponseEntity<SearchResult[]> response =
-                restTemplate.postForEntity(
-                        retrievalApiUrl,
-                        request,
-                        SearchResult[].class
-                );
+                restTemplate.postForEntity(retrievalApiUrl, request, SearchResult[].class);
 
         return Arrays.asList(response.getBody());
+    }
+
+    public long getNlpIndexSize() {
+        try {
+            String statsUrl = retrievalApiUrl.replace("/search", "/stats");
+            java.util.Map<?, ?> stats = restTemplate.getForObject(statsUrl, java.util.Map.class);
+            if (stats != null && stats.containsKey("index_size")) {
+                return ((Number) stats.get("index_size")).longValue();
+            }
+        } catch (Exception ex) {
+            // fallback
+        }
+        return 0;
     }
 }

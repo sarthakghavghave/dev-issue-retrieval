@@ -7,16 +7,24 @@ import com.devissueretrieval.dto.GitHubLabelDto;
 import com.devissueretrieval.model.Issue;
 import com.devissueretrieval.repository.IssueRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IssueService {
 
     private final GitHubClient gitHubClient;
     private final IssueRepository issueRepository;
+    private final NlpUpdateService nlpUpdateService;
+    int repositoriesProcessed = 0;
 
     private static final List<String> REPOSITORIES = List.of(
             "spring-projects/spring-boot",
@@ -26,19 +34,87 @@ public class IssueService {
             "postgres/postgres"
     );
 
+    private static final int GITHUB_MAX_PAGES = 5; // 5 * 100 = up to 500 newest updates per repo per run
+
     public void fetchIncrementalIssues() {
 
+        List<Issue> changedIssues = new ArrayList<>();
+
         for (String repository : REPOSITORIES) {
-            List<GitHubIssueDto> githubIssues = gitHubClient.fetchIssues(repository, 1);
-            if (githubIssues == null || githubIssues.isEmpty())
-                continue;
+            try {
+                processRepository(repository, changedIssues);
+                repositoriesProcessed++;
+            } catch (Exception ex) {
+                // A failure on one repository must not stop ingestion for the others.
+                log.error("Incremental ingestion failed for repository {}", repository, ex);
+            }
+        }
 
+        log.info("Changed issues count: {}", changedIssues.size());
+
+        if (!changedIssues.isEmpty()) {
+            try {
+                log.info("Incremental ingestion summary");
+                log.info("Repositories processed : {}", repositoriesProcessed);
+                log.info("Changed issues         : {}", changedIssues.size());
+                nlpUpdateService.updateIssueIndex(changedIssues);
+            } catch (Exception ex) {
+                log.error("Failed to update NLP index after ingesting issues", ex);
+            }
+        }
+    }
+
+    private void processRepository(String repository, List<Issue> changedIssues) {
+
+        java.time.Instant latestUpdate = issueRepository.findTopByRepositoryNameOrderByUpdatedAtDesc(repository)
+                .map(Issue::getUpdatedAt)
+                .orElse(java.time.Instant.now().minus(java.time.Duration.ofDays(1)));
+
+        String since = latestUpdate
+                .plus(java.time.Duration.ofSeconds(1))
+                .toString();
+
+        log.info("Fetching {} since {} (latest DB updated_at = {})", repository, since, latestUpdate);
+
+        boolean keepPaging = true;
+        for (int page = 1; page <= GITHUB_MAX_PAGES && keepPaging; page++) {
+
+            List<GitHubIssueDto> githubIssues;
+            try {
+                githubIssues = gitHubClient.fetchIssues(repository, page, since);
+            } catch (Exception ex) {
+                log.error("GitHub API call failed for {} (page {}): {}", repository, page, ex.getMessage());
+                return;
+            }
+
+            log.info("Repository {} page {} returned {} issues", repository, page,
+                    githubIssues == null ? 0 : githubIssues.size());
+
+            if (githubIssues == null || githubIssues.isEmpty()) {
+                return;
+            }
+
+            int processedThisPage = 0;
             for (GitHubIssueDto dto : githubIssues) {
-                // only-text or only-body is also acceptable
-                if (!isValidIssue(dto))
-                    continue;
 
-                // Upsert pattern: update if exists, insert if not
+                // GitHub returns pull requests as issues too; skip those.
+                if (dto.getId() == null) {
+                    continue;
+                }
+
+                // once we see an issue whose `updated_at` is older than the watermark
+                // we already have, we know every later one is also older -> stop paging.
+                if (dto.getUpdated_at() != null
+                        && latestUpdate != null
+                        && !dto.getUpdated_at().isAfter(latestUpdate)) {
+                    keepPaging = false;
+                    break;
+                }
+
+                if (!isValidIssue(dto)) {
+                    continue;
+                }
+
                 Issue issue = issueRepository.findByGithubIssueId(dto.getId())
                         .orElse(Issue.builder()
                                 .githubIssueId(dto.getId())
@@ -47,8 +123,6 @@ public class IssueService {
 
                 boolean isNew = issue.getId() == null;
 
-                // no changes on GitHub since last fetch -> skip
-                // If existing, only update when remote `updated_at` is newer than stored `updatedAt`.
                 if (!isNew
                         && dto.getUpdated_at() != null
                         && issue.getUpdatedAt() != null
@@ -56,13 +130,31 @@ public class IssueService {
                     continue;
                 }
 
-                // Update/set fields
                 mapIssue(issue, dto, repository);
 
-                issue.setComments(fetchTopComments(dto.getComments_url()));
-                issue.setCommentsEnriched(true);
+                try {
+                    issue.setComments(fetchTopComments(dto.getComments_url()));
+                    issue.setCommentsEnriched(true);
+                } catch (Exception ex) {
+                    // If the comments endpoint fails, we still want to keep the issue
+                    // update - just persist it with no comments for now.
+                    log.warn("Could not fetch comments for issue {}: {}", dto.getId(), ex.getMessage());
+                    issue.setComments("");
+                    issue.setCommentsEnriched(false);
+                }
 
-                issueRepository.save(issue);
+                Issue saved = issueRepository.save(issue);
+                changedIssues.add(saved);
+                processedThisPage++;
+            }
+
+            log.info("Repository {} page {} processed {} changed issues", repository, page, processedThisPage);
+
+            try {
+                Thread.sleep(800);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
             }
         }
     }
@@ -78,11 +170,21 @@ public class IssueService {
                     Thread.currentThread().interrupt();
                 }
 
-                List<GitHubIssueDto> githubIssues = gitHubClient.fetchIssues(repository, page);
+                List<GitHubIssueDto> githubIssues;
+                try {
+                    githubIssues = gitHubClient.fetchIssues(repository, page);
+                } catch (Exception ex) {
+                    log.error("Historical backfill failed for {} (page {}): {}",
+                            repository, page, ex.getMessage());
+                    break;
+                }
                 if (githubIssues == null || githubIssues.isEmpty())
                     break;
 
                 for (GitHubIssueDto dto : githubIssues) {
+                    if (dto.getId() == null) {
+                        continue;
+                    }
                     if (!isValidIssue(dto))
                         continue;
 
@@ -139,6 +241,8 @@ public class IssueService {
         if (commentsUrl == null)
             return "";
         List<GitHubCommentDto> comments = gitHubClient.fetchComments(commentsUrl);
+        if (comments == null)
+            return "";
 
         return comments.stream()
                 .limit(3)

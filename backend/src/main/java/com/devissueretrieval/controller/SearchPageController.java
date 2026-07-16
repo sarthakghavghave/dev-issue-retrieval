@@ -15,4 +15,9 @@ public class SearchPageController {
     public String architecture() {
         return "architecture";
     }
+
+    @GetMapping("/about")
+    public String about() {
+        return "about";
+    }
 }

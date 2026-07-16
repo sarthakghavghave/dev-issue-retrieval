@@ -12,7 +12,7 @@ public class GitHubIssueDto {
     private String body;
     private String html_url;
     private String comments_url;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
+    private java.time.Instant created_at;
+    private java.time.Instant updated_at;
     private List<GitHubLabelDto> labels;
 }
