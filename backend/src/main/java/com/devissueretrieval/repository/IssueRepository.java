@@ -12,4 +12,7 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 
     @Query("SELECT COUNT(DISTINCT i.repositoryName) FROM Issue i WHERE i.repositoryName IS NOT NULL AND i.repositoryName <> ''")
     long countDistinctRepositoryNames();
+
+    @Query("SELECT DISTINCT i.repositoryName FROM Issue i WHERE i.repositoryName IS NOT NULL AND i.repositoryName <> '' ORDER BY i.repositoryName")
+    java.util.List<String> findDistinctRepositoryNames();
 }

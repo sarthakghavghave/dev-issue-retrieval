@@ -26,7 +26,8 @@ public class StatsController {
         if (total <= 0) {
             total = issueRepository.count();
         }
-        long distinctRepos = issueRepository.countDistinctRepositoryNames();
+        java.util.List<String> repos = issueRepository.findDistinctRepositoryNames();
+        long distinctRepos = repos.size();
 
         return IndexStatsDto.builder()
                 .issueCount(total)
@@ -40,6 +41,7 @@ public class StatsController {
                 .retrievalBackend("FAISS")
                 .schedulerRunning(issueScheduler.isRunning())
                 .schedulerFixedRateMs(issueScheduler.getFixedRate())
+                .repositoryNames(repos)
                 .build();
     }
 }

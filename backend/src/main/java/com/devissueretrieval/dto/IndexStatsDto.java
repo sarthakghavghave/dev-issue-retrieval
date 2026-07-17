@@ -16,4 +16,5 @@ public class IndexStatsDto {
     private String retrievalBackend;
     private boolean schedulerRunning;
     private long schedulerFixedRateMs;
+    private java.util.List<String> repositoryNames;
 }
