@@ -1,6 +1,7 @@
 package com.devissueretrieval.controller;
 
 import com.devissueretrieval.dto.IndexStatsDto;
+import com.devissueretrieval.model.IndexStatus;
 import com.devissueretrieval.repository.IssueRepository;
 import com.devissueretrieval.scheduler.IssueScheduler;
 import com.devissueretrieval.service.RetrievalService;
@@ -22,7 +23,8 @@ public class StatsController {
 
     @GetMapping
     public IndexStatsDto getStats() {
-        long total = retrievalService.getNlpIndexSize();
+        long indexedCount = issueRepository.countByIndexStatus(IndexStatus.INDEXED);
+        long total = indexedCount > 0 ? indexedCount : retrievalService.getNlpIndexSize();
         if (total <= 0) {
             total = issueRepository.count();
         }

@@ -3,6 +3,7 @@ package com.devissueretrieval.controller;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import com.devissueretrieval.model.IndexStatus;
 import com.devissueretrieval.service.RetrievalService;
 import com.devissueretrieval.repository.IssueRepository;
 import com.devissueretrieval.dto.SearchResult;
@@ -31,7 +32,8 @@ public class SearchController {
     @GetMapping("/stats")
     public Map<String, Object> getStats() {
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalIssues", issueRepository.count());
+        long indexedCount = issueRepository.countByIndexStatus(IndexStatus.INDEXED);
+        stats.put("totalIssues", indexedCount > 0 ? indexedCount : issueRepository.count());
         stats.put("totalRepositories", issueRepository.countDistinctRepositoryNames());
         return stats;
     }

@@ -15,4 +15,7 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 
     @Query("SELECT DISTINCT i.repositoryName FROM Issue i WHERE i.repositoryName IS NOT NULL AND i.repositoryName <> '' ORDER BY i.repositoryName")
     java.util.List<String> findDistinctRepositoryNames();
+
+    java.util.List<Issue> findByIndexStatus(com.devissueretrieval.model.IndexStatus indexStatus);
+    long countByIndexStatus(com.devissueretrieval.model.IndexStatus indexStatus);
 }

@@ -1,5 +1,8 @@
 package com.devissueretrieval.model;
 
+import com.devissueretrieval.model.IndexStatus;
+import com.devissueretrieval.model.FilterReason;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -45,4 +48,14 @@ public class Issue {
 
     private java.time.Instant createdAt;
     private java.time.Instant updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private IndexStatus indexStatus = IndexStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    @Builder.Default
+    private FilterReason filterReason = FilterReason.NONE;
 }

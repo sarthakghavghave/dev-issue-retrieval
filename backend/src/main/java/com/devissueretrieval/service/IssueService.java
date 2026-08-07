@@ -160,52 +160,55 @@ public class IssueService {
     }
 
     public void fetchHistoricalIssues() {
+        log.info("Starting background historical backfill...");
+        new Thread(() -> {
+            for (String repository : REPOSITORIES) {
+                for (int page = 1; page <= 20; page++) {
 
-        for (String repository : REPOSITORIES) {
-            for (int page = 1; page <= 20; page++) {
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-
-                List<GitHubIssueDto> githubIssues;
-                try {
-                    githubIssues = gitHubClient.fetchIssues(repository, page);
-                } catch (Exception ex) {
-                    log.error("Historical backfill failed for {} (page {}): {}",
-                            repository, page, ex.getMessage());
-                    break;
-                }
-                if (githubIssues == null || githubIssues.isEmpty())
-                    break;
-
-                for (GitHubIssueDto dto : githubIssues) {
-                    if (dto.getId() == null) {
-                        continue;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
-                    if (!isValidIssue(dto))
-                        continue;
 
-                    boolean exists = issueRepository.existsByGithubIssueId(dto.getId());
-                    if (exists)
-                        continue;
+                    List<GitHubIssueDto> githubIssues;
+                    try {
+                        githubIssues = gitHubClient.fetchIssues(repository, page);
+                    } catch (Exception ex) {
+                        log.error("Historical backfill failed for {} (page {}): {}",
+                                repository, page, ex.getMessage());
+                        break;
+                    }
+                    if (githubIssues == null || githubIssues.isEmpty())
+                        break;
 
-                    Issue issue = Issue.builder()
-                            .githubIssueId(dto.getId())
-                            .source("github")
-                            .build();
+                    for (GitHubIssueDto dto : githubIssues) {
+                        if (dto.getId() == null) {
+                            continue;
+                        }
+                        if (!isValidIssue(dto))
+                            continue;
 
-                    mapIssue(issue, dto, repository);
+                        boolean exists = issueRepository.existsByGithubIssueId(dto.getId());
+                        if (exists)
+                            continue;
 
-                    issue.setComments("");
-                    issue.setCommentsEnriched(false);
+                        Issue issue = Issue.builder()
+                                .githubIssueId(dto.getId())
+                                .source("github")
+                                .build();
 
-                    issueRepository.save(issue);
+                        mapIssue(issue, dto, repository);
+
+                        issue.setComments("");
+                        issue.setCommentsEnriched(false);
+
+                        issueRepository.save(issue);
+                    }
                 }
             }
-        }
+            log.info("Historical backfill completed.");
+        }).start();
     }
 
     private boolean isValidIssue(GitHubIssueDto dto) {
@@ -235,6 +238,7 @@ public class IssueService {
                         .reduce((a, b) -> a + "," + b)
                         .orElse("")
         );
+        issue.setIndexStatus(com.devissueretrieval.model.IndexStatus.PENDING);
     }
 
     private String fetchTopComments(String commentsUrl) {
