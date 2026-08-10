@@ -6,6 +6,8 @@ import pandas as pd
 import faiss
 from pathlib import Path
 
+from scripts.batch_index import process_pending_issues
+
 TOP_K = 10
 FINAL_K = 5
 RERANK_K = 5
@@ -39,6 +41,11 @@ class IssueUpdateDto(BaseModel):
     updated_at: str = ""
     comments: str = ""
     comments_url: str = ""
+
+
+class ProcessPendingRequest(BaseModel):
+    batch_size: int = 50
+    max_batches: Optional[int] = None
 
 
 def load_index_data():
@@ -86,9 +93,17 @@ def update_index_endpoint(issues: Optional[List[IssueUpdateDto]] = Body(default=
         else:
             result = incremental_index_update(None, embedder)
     except Exception as ex:
-        # Return the failure as a structured error so the Java caller can log it
-        # clearly. The issues are already safely persisted in PostgreSQL.
         return {"status": "error", "message": str(ex), "added": 0, "replaced": 0, "total": 0}
+
+    try:
+        pending_result = process_pending_issues(
+            embedder,
+            batch_size=max(20, min(100, len(issues or []) or 50)),
+            max_batches=1,
+        )
+        result["pending_processing"] = pending_result
+    except Exception as ex:
+        result["pending_processing_error"] = str(ex)
 
     try:
         load_index_data()
@@ -96,6 +111,17 @@ def update_index_endpoint(issues: Optional[List[IssueUpdateDto]] = Body(default=
         return {"status": "warning", "message": "index updated but reload failed: " + str(ex), **result}
 
     return {"status": "ok", **result}
+
+
+@app.post("/process-pending")
+def process_pending_endpoint(request: Optional[ProcessPendingRequest] = Body(default=None)):
+    try:
+        batch_size = request.batch_size if request else 50
+        max_batches = request.max_batches if request else None
+        result = process_pending_issues(embedder, batch_size=batch_size, max_batches=max_batches)
+        return {"status": "ok", **result}
+    except Exception as ex:
+        return {"status": "error", "message": str(ex)}
 
 
 @app.post("/search")

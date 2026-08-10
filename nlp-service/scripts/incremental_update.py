@@ -1,56 +1,12 @@
 import faiss
 import pandas as pd
 import numpy as np
-import re
 import shutil
 import tempfile
-from bs4 import BeautifulSoup
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-INDEX_PATH = BASE_DIR / "data/embeddings/faiss_index.index"
-METADATA_PATH = BASE_DIR / "data/embeddings/metadata.parquet"
-
-
-def clean_text(text):
-    if pd.isna(text):
-        return ""
-
-    text = str(text)
-    text = BeautifulSoup(text, "html.parser").get_text()
-    text = re.sub(r"\[(.*?)\]\((.*?)\)", r"\1", text)
-    text = re.sub(r"http\S+", " ", text)
-    text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)
-    text = re.sub(r"`(.*?)`", r"\1", text)
-    text = re.sub(r"#+", " ", text)
-    text = re.sub(
-        r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]+",
-        " ",
-        text
-    )
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
-
-
-def preprocess_incremental_issue(row):
-    row["title"] = clean_text(row.get("title", ""))
-    row["body"] = clean_text(row.get("body", ""))
-    row["labels"] = clean_text(str(row.get("labels", "") or ""))
-    comments = clean_text(row.get("comments", ""))
-    row["comments"] = comments[:1500]
-    return row
-
-
-def build_retrieval_text(row):
-    title = str(row.get("title", "") or "").strip()
-    body = str(row.get("body", "") or "").strip()
-    labels = str(row.get("labels", "") or "").strip()
-    repository = str(row.get("repository_name", "") or "").strip()
-    comments = str(row.get("comments", "") or "").strip()
-
-    comments_section = f"\n\nComments:\n{comments}" if comments else ""
-
-    return f"Repository: {repository}\n\nTitle: {title}\n\nLabels: {labels}\n\nBody:\n{body}{comments_section}".strip()
+from scripts.config import INDEX_PATH, METADATA_PATH
+from scripts.preprocessing import build_retrieval_text, preprocess_issue
 
 
 def _safe_write_index(index, path: Path):
@@ -95,6 +51,7 @@ def update_index(new_issues=None, embedder=None):
         raise ValueError("embedder is required for incremental update")
 
     if new_issues is None:
+        from scripts.config import BASE_DIR
         new_df = pd.read_parquet(BASE_DIR / "data/incremental/new_issues.parquet")
     else:
         new_df = pd.DataFrame(new_issues)
@@ -105,24 +62,27 @@ def update_index(new_issues=None, embedder=None):
     if "github_issue_id" not in new_df.columns:
         raise ValueError("github_issue_id is required for incremental update")
 
-    # Drop rows missing the id - we cannot upsert them safely.
     new_df = new_df.dropna(subset=["github_issue_id"]).copy()
     if new_df.empty:
         return {"status": "no valid new issues", "added": 0, "total": 0}
 
-    # Normalize types up front so the merge logic is consistent.
     new_df["github_issue_id"] = new_df["github_issue_id"].astype("int64")
     new_df = new_df.drop_duplicates(subset=["github_issue_id"], keep="last")
 
-    new_df = new_df.apply(preprocess_incremental_issue, axis=1)
+    processed_rows = []
+    for _, row in new_df.iterrows():
+        processed, filter_reason = preprocess_issue(row)
+        if filter_reason is None:
+            processed_rows.append(processed)
+
+    new_df = pd.DataFrame(processed_rows)
+    if new_df.empty:
+        return {"status": "no valid new issues", "added": 0, "total": 0}
 
     if "retrieval_text" not in new_df.columns:
         new_df["retrieval_text"] = new_df.apply(build_retrieval_text, axis=1)
 
     new_df = new_df.fillna("")
-
-    # Drop rows whose retrieval text is empty - they would only add noisy
-    # (or zero) vectors to the index.
     new_df = new_df[new_df["retrieval_text"].astype(str).str.strip() != ""]
     if new_df.empty:
         return {"status": "no valid new issues", "added": 0, "total": 0}
@@ -133,14 +93,10 @@ def update_index(new_issues=None, embedder=None):
         show_progress_bar=False,
     )
 
-    # Track this locally because the `existing_ids` variable in the `else`
-    # branch is not visible in the cold-start branch.
     replaced_count = 0
     total_after = 0
 
     if not INDEX_PATH.exists() or not METADATA_PATH.exists():
-        # Cold start - there is no existing index to merge with. Build a fresh
-        # IDMap so subsequent incremental calls can upsert into it.
         dim = len(embeddings[0])
         base_index = faiss.IndexFlatIP(dim)
         index = faiss.IndexIDMap2(base_index)
@@ -152,7 +108,6 @@ def update_index(new_issues=None, embedder=None):
         metadata = pd.read_parquet(str(METADATA_PATH))
         metadata = metadata.fillna("")
 
-        # Ensure the in-memory index supports remove_ids / add_with_ids.
         if not isinstance(index, faiss.IndexIDMap):
             if "github_issue_id" in metadata.columns and len(metadata) == index.ntotal:
                 dim = index.d
@@ -189,7 +144,6 @@ def update_index(new_issues=None, embedder=None):
 
     total_after = int(index.ntotal)
 
-    # Persist atomically.
     _safe_write_index(index, INDEX_PATH)
     _safe_write_parquet(metadata, METADATA_PATH)
 

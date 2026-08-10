@@ -4,6 +4,7 @@ sqlalchemy
 bs4
 tqdm
 psycopg2-binary
+python-dotenv
 sentence-transformers
 faiss-cpu
 pyarrow
