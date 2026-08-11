@@ -4,9 +4,8 @@ import faiss
 
 from sentence_transformers import SentenceTransformer
 from pathlib import Path
-from tqdm import tqdm
 
-MODEL_NAME = "BAAI/bge-small-en-v1.5"
+from scripts.config import MODEL_NAME
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CSV_PATH = BASE_DIR / "data/processed/cleaned_issues.csv"
@@ -24,7 +23,7 @@ model = SentenceTransformer(MODEL_NAME)
 embeddings = model.encode(
     texts,
     batch_size=32,
-    show_progress_bar=True,
+    show_progress_bar=False,
     convert_to_numpy=True,
     normalize_embeddings=True
 )

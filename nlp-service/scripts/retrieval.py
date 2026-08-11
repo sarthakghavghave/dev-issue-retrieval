@@ -3,10 +3,10 @@ import pandas as pd
 from pathlib import Path
 from sentence_transformers import SentenceTransformer, CrossEncoder
 
+from scripts.config import MODEL_NAME
+
 FAISS_TOP_K = 20
 FINAL_TOP_K = 10
-
-EMBED_MODEL = "BAAI/bge-small-en-v1.5"
 RERANK_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 INDEX_PATH = BASE_DIR / "data/embeddings/faiss_index.index"
 METADATA_PATH = BASE_DIR / "data/embeddings/metadata.parquet"
 
-embed_model = SentenceTransformer(EMBED_MODEL)
+embed_model = SentenceTransformer(MODEL_NAME)
 reranker = CrossEncoder(RERANK_MODEL)
 
 INDEX = faiss.read_index(str(INDEX_PATH))

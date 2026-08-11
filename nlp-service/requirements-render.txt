@@ -5,3 +5,8 @@ sentence-transformers==5.1.0
 fastapi==0.116.1
 uvicorn==0.35.0
 pyarrow==21.0.0
+
+python-dotenv==1.0.0
+sqlalchemy==2.0.20
+psycopg2-binary==2.9.6
+beautifulsoup4==4.12.2

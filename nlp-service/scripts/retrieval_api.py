@@ -1,12 +1,14 @@
 from typing import List, Optional
 from fastapi import FastAPI, Body
 from pydantic import BaseModel
-from sentence_transformers import SentenceTransformer, CrossEncoder
+import os
+from sentence_transformers import SentenceTransformer
 import pandas as pd
 import faiss
 from pathlib import Path
 
 from scripts.batch_index import process_pending_issues
+from scripts.config import MODEL_NAME
 
 TOP_K = 10
 FINAL_K = 5
@@ -19,8 +21,15 @@ METADATA_PATH = BASE_DIR / "data/embeddings/metadata.parquet"
 
 app = FastAPI()
 
-embedder = SentenceTransformer("BAAI/bge-small-en-v1.5")
-reranker = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L-2-v2")
+embedder = SentenceTransformer(MODEL_NAME)
+
+# cross-encoder reranker (can be disabled in low-memory deployments)
+USE_RERANKER = os.getenv("USE_RERANKER", "true").lower() in ("1", "true", "yes")
+if USE_RERANKER:
+    from sentence_transformers import CrossEncoder
+    reranker = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L-2-v2")
+else:
+    reranker = None
 
 index = None
 metadata = None
@@ -164,7 +173,11 @@ def search(request: SearchRequest):
     if not pairs:
         return []
 
-    rerank_scores = reranker.predict(pairs)
+    if reranker is not None:
+        rerank_scores = reranker.predict(pairs)
+    else:
+        # If reranker is disabled, use a flat score so results retain deterministic ordering
+        rerank_scores = [0.0 for _ in pairs]
 
     ranked = sorted(
         zip(candidates, rerank_scores),

@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pandas as pd
 from sqlalchemy import create_engine, text
-from tqdm import tqdm
 
 from scripts.config import CSV_PATH, build_database_url
 from scripts.preprocessing import FILTER_REASON_DUPLICATE, preprocess_issue
@@ -32,7 +31,7 @@ def export_to_csv(output_path: Path | None = None) -> None:
     processed_rows = []
     seen_keys = set()
 
-    for _, row in tqdm(df.iterrows(), total=len(df)):
+    for _, row in df.iterrows():
         processed, filter_reason = preprocess_issue(row)
 
         if filter_reason is None:

@@ -8,7 +8,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from sentence_transformers import SentenceTransformer
-from tqdm import tqdm
 
 from scripts.config import BATCH_SIZE, MODEL_NAME
 from scripts.db import (
