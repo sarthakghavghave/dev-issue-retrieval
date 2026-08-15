@@ -6,6 +6,7 @@ import java.util.HashMap;
 import com.devissueretrieval.model.IndexStatus;
 import com.devissueretrieval.service.RetrievalService;
 import com.devissueretrieval.repository.IssueRepository;
+import com.devissueretrieval.dto.SearchConfigDto;
 import com.devissueretrieval.dto.SearchResult;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +26,18 @@ public class SearchController {
     }
 
     @GetMapping
-    public List<SearchResult> search(@RequestParam String query) {
-        return retrievalService.search(query);
+    public List<SearchResult> search(
+            @RequestParam String query,
+            @RequestParam(required = false) Integer topK,
+            @RequestParam(required = false) Integer finalK,
+            @RequestParam(required = false) Integer rerankK,
+            @RequestParam(required = false) Boolean useReranker) {
+        return retrievalService.search(query, topK, finalK, rerankK, useReranker);
+    }
+
+    @GetMapping("/config")
+    public SearchConfigDto getSearchConfig() {
+        return retrievalService.getSearchConfig();
     }
 
     @GetMapping("/stats")

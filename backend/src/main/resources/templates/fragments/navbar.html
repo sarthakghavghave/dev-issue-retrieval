@@ -1,9 +1,12 @@
 <nav th:fragment="mainNavbar" class="navbar">
-    <div class="logo">DevIssue</div>
+    <a th:href="@{/}" class="logo">DevIssue</a>
 
     <div class="nav-links">
         <a th:href="@{/}">Search</a>
         <a th:href="@{/architecture}">Architecture</a>
         <a th:href="@{/about}">About</a>
+        <a href="https://github.com/sarthakghavghave/dev-issue-retrieval" target="_blank" rel="noopener noreferrer" class="nav-github">
+            GitHub
+        </a>
     </div>
 </nav>

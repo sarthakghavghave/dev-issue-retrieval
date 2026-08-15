@@ -1,13 +1,15 @@
 package com.devissueretrieval.service;
 
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
+
+import com.devissueretrieval.dto.SearchConfigDto;
 import com.devissueretrieval.dto.SearchRequest;
 import com.devissueretrieval.dto.SearchResult;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
-import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class RetrievalService {
@@ -15,17 +17,61 @@ public class RetrievalService {
     @Value("${retrieval.api.url}")
     private String retrievalApiUrl;
 
+    @Value("${retrieval.search.top-k:10}")
+    private int defaultTopK;
+
+    @Value("${retrieval.search.final-k:5}")
+    private int defaultFinalK;
+
+    @Value("${retrieval.search.rerank-k:5}")
+    private int defaultRerankK;
+
+    @Value("${retrieval.search.use-reranker:true}")
+    private boolean defaultUseReranker;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public List<SearchResult> search(String query) {
+    public List<SearchResult> search(
+            String query,
+            Integer topK,
+            Integer finalK,
+            Integer rerankK,
+            Boolean useReranker) {
 
         SearchRequest request = new SearchRequest();
         request.setQuery(query);
+        request.setTopK(topK);
+        request.setFinalK(finalK);
+        request.setRerankK(rerankK);
+        request.setUseReranker(useReranker);
 
         ResponseEntity<SearchResult[]> response =
                 restTemplate.postForEntity(retrievalApiUrl, request, SearchResult[].class);
 
-        return Arrays.asList(response.getBody());
+        SearchResult[] body = response.getBody();
+        if (body == null) {
+            return List.of();
+        }
+        return Arrays.asList(body);
+    }
+
+    public SearchConfigDto getSearchConfig() {
+        try {
+            String configUrl = retrievalApiUrl.replace("/search", "/search/config");
+            SearchConfigDto config = restTemplate.getForObject(configUrl, SearchConfigDto.class);
+            if (config != null) {
+                return config;
+            }
+        } catch (Exception ex) {
+            // fall back to local defaults
+        }
+
+        SearchConfigDto fallback = new SearchConfigDto();
+        fallback.setTopK(defaultTopK);
+        fallback.setFinalK(defaultFinalK);
+        fallback.setRerankK(defaultRerankK);
+        fallback.setUseReranker(defaultUseReranker);
+        return fallback;
     }
 
     public long getNlpIndexSize() {
