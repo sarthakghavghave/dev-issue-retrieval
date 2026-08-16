@@ -1,11 +1,7 @@
 import faiss
 import pandas as pd
 from pathlib import Path
-from scripts.hf_embedder import HFEmbedder
-try:
-    from sentence_transformers import CrossEncoder
-except ImportError:
-    CrossEncoder = None
+from scripts.hf_embedder import HFEmbedder, HFReranker
 
 from scripts.config import MODEL_NAME
 
@@ -19,10 +15,7 @@ INDEX_PATH = BASE_DIR / "data/embeddings/faiss_index.index"
 METADATA_PATH = BASE_DIR / "data/embeddings/metadata.parquet"
 
 embed_model = HFEmbedder(MODEL_NAME)
-if CrossEncoder:
-    reranker = CrossEncoder(RERANK_MODEL)
-else:
-    reranker = None
+reranker = HFReranker(RERANK_MODEL)
 
 INDEX = faiss.read_index(str(INDEX_PATH))
 METADATA = pd.read_parquet(str(METADATA_PATH))
