@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import FastAPI, Body
 from pydantic import BaseModel
 import os
-from scripts.hf_embedder import HFEmbedder, HFReranker
+from scripts.hf_embedder import HFEmbedder
 import pandas as pd
 import faiss
 from pathlib import Path
@@ -24,8 +24,9 @@ app = FastAPI()
 
 embedder = HFEmbedder(MODEL_NAME)
 
-# cross-encoder reranker
-RERANKER_MODEL = os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-TinyBERT-L-2-v2")
+# Jina reranker
+from scripts.jina_reranker import JinaReranker
+
 USE_RERANKER = os.getenv("USE_RERANKER", "true").lower() in ("1", "true", "yes")
 _reranker = None
 _reranker_lock = threading.Lock()
@@ -41,7 +42,7 @@ def get_reranker():
     if _reranker is None:
         with _reranker_lock:
             if _reranker is None:
-                _reranker = HFReranker(RERANKER_MODEL)
+                _reranker = JinaReranker()
     return _reranker
 
 index = None
@@ -114,12 +115,12 @@ def relevance_label(score: float, *, reranked: bool) -> str:
             return "Top Match"
         if score >= 2:
             return "Strong Match"
-        return "Related Issue"
+        return "Weak Match"
     if score >= 0.7:
         return "Top Match"
     if score >= 0.5:
         return "Strong Match"
-    return "Related Issue"
+    return "Weak Match"
 
 
 @app.get("/")

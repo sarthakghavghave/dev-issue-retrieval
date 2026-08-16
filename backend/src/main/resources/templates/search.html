@@ -276,16 +276,40 @@
             return;
         }
 
-        const response = await fetch(buildSearchUrl(query));
-        const repo = document.getElementById("repoFilter").value;
-        const sort = document.getElementById("sortFilter").value;
+        let response;
+        try {
+            response = await fetch(buildSearchUrl(query));
+        } catch (e) {
+            loading.innerHTML = "";
+            document.getElementById('resultCount').innerText = "";
+            const container = document.getElementById("results");
+            container.innerHTML = '<div class="result-card" style="border-left: 4px solid #ef4444;">Could not connect to the search service. Please check your connection.</div>';
+            return;
+        }
+
+        const container = document.getElementById("results");
+        container.innerHTML = "";
+        
+        if (!response.ok) {
+            loading.innerHTML = "";
+            document.getElementById('resultCount').innerText = "";
+            container.innerHTML = '<div class="result-card" style="border-left: 4px solid #ef4444;">NLP Service is currently unavailable or returning an error. It might be spinning up or down on Render. Please try again in a minute.</div>';
+            return;
+        }
 
         const data = await response.json();
         loading.innerHTML = "";
-        const container = document.getElementById("results");
-        container.innerHTML = "";
 
-        let filtered = data || [];
+        if (!Array.isArray(data)) {
+            document.getElementById('resultCount').innerText = "";
+            container.innerHTML = '<div class="result-card" style="border-left: 4px solid #ef4444;">Search service encountered an unexpected error format. NLP Service might be unavailable.</div>';
+            return;
+        }
+
+        let filtered = data;
+
+        const repo = document.getElementById("repoFilter").value;
+        const sort = document.getElementById("sortFilter").value;
 
         if(repo){
             filtered = filtered.filter(
