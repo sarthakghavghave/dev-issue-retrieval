@@ -1,7 +1,11 @@
 import faiss
 import pandas as pd
 from pathlib import Path
-from sentence_transformers import SentenceTransformer, CrossEncoder
+from scripts.hf_embedder import HFEmbedder
+try:
+    from sentence_transformers import CrossEncoder
+except ImportError:
+    CrossEncoder = None
 
 from scripts.config import MODEL_NAME
 
@@ -14,8 +18,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 INDEX_PATH = BASE_DIR / "data/embeddings/faiss_index.index"
 METADATA_PATH = BASE_DIR / "data/embeddings/metadata.parquet"
 
-embed_model = SentenceTransformer(MODEL_NAME)
-reranker = CrossEncoder(RERANK_MODEL)
+embed_model = HFEmbedder(MODEL_NAME)
+if CrossEncoder:
+    reranker = CrossEncoder(RERANK_MODEL)
+else:
+    reranker = None
 
 INDEX = faiss.read_index(str(INDEX_PATH))
 METADATA = pd.read_parquet(str(METADATA_PATH))
@@ -41,7 +48,10 @@ while True:
         candidates.append((idx, row))
         pairs.append([query, text])
 
-    rerank_scores = reranker.predict(pairs)
+    if reranker:
+        rerank_scores = reranker.predict(pairs)
+    else:
+        rerank_scores = [0.0] * len(pairs)
 
     results = []
 

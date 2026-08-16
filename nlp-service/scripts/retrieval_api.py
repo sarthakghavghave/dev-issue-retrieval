@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import FastAPI, Body
 from pydantic import BaseModel
 import os
-from sentence_transformers import SentenceTransformer
+from scripts.hf_embedder import HFEmbedder
 import pandas as pd
 import faiss
 from pathlib import Path
@@ -22,11 +22,11 @@ METADATA_PATH = BASE_DIR / "data/embeddings/metadata.parquet"
 
 app = FastAPI()
 
-embedder = SentenceTransformer(MODEL_NAME)
+embedder = HFEmbedder(MODEL_NAME)
 
 # cross-encoder reranker (can be disabled in low-memory deployments)
 RERANKER_MODEL = os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-TinyBERT-L-2-v2")
-USE_RERANKER = os.getenv("USE_RERANKER", "true").lower() in ("1", "true", "yes")
+USE_RERANKER = os.getenv("USE_RERANKER", "false").lower() in ("1", "true", "yes")
 _reranker = None
 _reranker_lock = threading.Lock()
 
@@ -41,8 +41,12 @@ def get_reranker():
     if _reranker is None:
         with _reranker_lock:
             if _reranker is None:
-                from sentence_transformers import CrossEncoder
-                _reranker = CrossEncoder(RERANKER_MODEL)
+                try:
+                    from sentence_transformers import CrossEncoder
+                    _reranker = CrossEncoder(RERANKER_MODEL)
+                except ImportError:
+                    print("sentence_transformers not installed, reranker disabled.")
+                    _reranker = None
     return _reranker
 
 index = None

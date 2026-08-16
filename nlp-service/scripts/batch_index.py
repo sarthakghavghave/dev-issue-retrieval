@@ -7,7 +7,7 @@ from pathlib import Path
 # Allow running as `python scripts/batch_index.py` from nlp-service root.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from sentence_transformers import SentenceTransformer
+from scripts.hf_embedder import HFEmbedder
 
 from scripts.config import BATCH_SIZE, MODEL_NAME
 from scripts.db import (
@@ -103,7 +103,7 @@ def process_pending_issues(
 ) -> dict:
     print(f"\nConnecting to Neon and loading embedder ({MODEL_NAME})...")
     if embedder is None:
-        embedder = SentenceTransformer(MODEL_NAME)
+        embedder = HFEmbedder(MODEL_NAME)
 
     pending_count = count_by_status("PENDING")
     print(f"Pending issues in database: {pending_count}")
