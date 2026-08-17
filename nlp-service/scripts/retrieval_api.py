@@ -11,9 +11,9 @@ import threading
 from scripts.batch_index import process_pending_issues
 from scripts.config import MODEL_NAME
 
-TOP_K = int(os.getenv("FAISS_TOP_K", "10"))
-FINAL_K = int(os.getenv("FINAL_K", "5"))
-RERANK_K = int(os.getenv("RERANK_K", "5"))
+TOP_K = int(os.getenv("FAISS_TOP_K", "20"))
+FINAL_K = int(os.getenv("FINAL_K", "10"))
+RERANK_K = int(os.getenv("RERANK_K", "20"))
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,8 +77,10 @@ class ProcessPendingRequest(BaseModel):
 
 def load_index_data():
     global index, metadata, index_is_id_map, id_to_pos
+
     index = faiss.read_index(str(INDEX_PATH))
-    index_is_id_map = hasattr(index, "add_with_ids")
+    index_is_id_map = isinstance(index, (faiss.IndexIDMap, faiss.IndexIDMap2))
+
     metadata = pd.read_parquet(str(METADATA_PATH))
 
     if index_is_id_map and "github_issue_id" in metadata.columns:
@@ -111,14 +113,14 @@ def resolve_search_params(request: SearchRequest):
 
 def relevance_label(score: float, *, reranked: bool) -> str:
     if reranked:
-        if score >= 5:
+        if score >= 0.7:
             return "Top Match"
-        if score >= 2:
+        if score >= 0.5:
             return "Strong Match"
         return "Weak Match"
-    if score >= 0.7:
+    if score >= 0.8:
         return "Top Match"
-    if score >= 0.5:
+    if score >= 0.62:
         return "Strong Match"
     return "Weak Match"
 
