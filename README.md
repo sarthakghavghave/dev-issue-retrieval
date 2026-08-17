@@ -2,25 +2,25 @@
 
 A full-stack semantic search platform for discovering relevant developer issues and technical discussions from open-source repositories.
 
-Live Demo: https://spring-ccmb.onrender.com/
+Live Demo: https://dev-issue.onrender.com/
 
 ## Overview
 
 Dev Issue Retrieval lets developers search GitHub issues with natural language instead of exact keywords.
 
-The system loads raw issue data from a cloud-hosted NEON database, preprocesses it through a Spring Boot backend, generates embeddings in an NLP service, indexes results with FAISS, and reranks candidates with a lightweight cross-encoder.
+The system loads raw issue data from a cloud-hosted NEON database, preprocesses it through a Spring Boot backend, generates embeddings using the Hugging Face Inference API, indexes results with FAISS, and reranks candidates using the Jina Reranker API.
 
 ## Features
 
 * Natural language search over GitHub issue content
 * FAISS vector retrieval for fast similarity search
-* TinyBERT cross-encoder reranking for better relevance
+* Jina API reranking for better relevance
 * Spring Boot web application
-* FastAPI NLP service for embedding and indexing
+* FastAPI NLP service for search routing and indexing
 * Dockerized deployment
 * Automatic periodic incremental ingestion for new issues
 * Cloud-backed raw issue storage via NEON
-* Small models optimized for free-tier memory limits
+* External ML APIs optimized for free-tier memory limits
 
 ## System Architecture
 
@@ -28,7 +28,7 @@ The system has three connected components:
 
 1. Cloud NEON database stores raw GitHub issue records.
 2. Spring Boot backend reads raw data, sends content to the NLP service, and manages indexing.
-3. FastAPI NLP service preprocesses text, computes embeddings, updates FAISS, and serves search.
+3. FastAPI NLP service preprocesses text, fetches embeddings via API, updates FAISS, and serves search.
 
 ### Architecture Flow
 
@@ -54,7 +54,7 @@ The backend also schedules automatic periodic ingestion so new or updated issues
 
 1. Raw issues are ingested from the NEON database.
 2. Text is cleaned and prepared for retrieval.
-3. Embeddings are generated with a small sentence-transformers model.
+3. Embeddings are generated using the Hugging Face API.
 4. FAISS index files and metadata are written to disk.
 
 ### Online / Search
@@ -62,15 +62,15 @@ The backend also schedules automatic periodic ingestion so new or updated issues
 1. User submits a query through the web UI.
 2. Query text is encoded as an embedding.
 3. FAISS retrieves top candidate issues.
-4. TinyBERT reranks candidates.
+4. Jina Reranker API reranks candidates.
 5. Ranked issue results are returned.
 
-## Models Used
+## AI APIs Used
 
-* Embedding model: `sentence-transformers/all-MiniLM-L6-v2`
-* Cross-encoder reranker: `cross-encoder/ms-marco-TinyBERT-L-2-v2`
+* Embeddings: Hugging Face Inference API (`sentence-transformers/all-MiniLM-L6-v2`)
+* Reranking: Jina Reranker API (`jina-reranker-v2-base-multilingual`)
 
-These smaller models help keep memory use low for cloud deployment on limited free-tier instances.
+Using external APIs keeps the memory footprint near zero, allowing the service to run easily on free-tier cloud instances.
 
 ## Dataset
 
@@ -93,7 +93,7 @@ Current indexed dataset:
 
 * FastAPI
 * Python
-* Sentence Transformers
+* Hugging Face & Jina APIs
 * FAISS
 
 ### Data Processing

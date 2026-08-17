@@ -1,17 +1,14 @@
-import numpy as np
-import pandas as pd
-import faiss
-
-from sentence_transformers import SentenceTransformer
+import sys
 from pathlib import Path
 
-from scripts.config import MODEL_NAME
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-CSV_PATH = BASE_DIR / "data/processed/cleaned_issues.csv"
-EMBEDDINGS_PATH = BASE_DIR / "data/embeddings/issue_embeddings.npy"
-INDEX_PATH = BASE_DIR / "data/embeddings/faiss_index.index"
-METADATA_PATH = BASE_DIR / "data/embeddings/metadata.parquet"
+import faiss
+import numpy as np
+import pandas as pd
+
+from scripts.config import CSV_PATH, INDEX_PATH, METADATA_PATH, MODEL_NAME, EMBEDDINGS_PATH
+from scripts.hf_embedder import HFEmbedder
 
 df = pd.read_csv(CSV_PATH)
 df = df.dropna(subset=["retrieval_text"])
@@ -19,7 +16,7 @@ texts = df["retrieval_text"].tolist()
 
 print(f"\nTotal documents: {len(texts)}")
 
-model = SentenceTransformer(MODEL_NAME)
+model = HFEmbedder(MODEL_NAME)
 embeddings = model.encode(
     texts,
     batch_size=32,

@@ -10,6 +10,7 @@ load_dotenv(BASE_DIR / ".env")
 
 MODEL_NAME = os.getenv("EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", "100"))
+EMBEDDINGS_PATH = BASE_DIR / "data/embeddings/issue_embeddings.npy"
 INDEX_PATH = BASE_DIR / "data/embeddings/faiss_index.index"
 METADATA_PATH = BASE_DIR / "data/embeddings/metadata.parquet"
 CSV_PATH = BASE_DIR / "data/processed/cleaned_issues.csv"
