@@ -16,6 +16,18 @@
         </p>
     </div>
 
+    <div class="search-tagline-card">
+        <div>
+            <p class="search-tagline-kicker">Semantic issue search</p>
+            <h2>Search the problem.<br><span>Don’t worry about the keywords.</span></h2>
+        </div>
+        <div class="search-tagline-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
     <div class="stats">
         <div class="stat-card" id="issuesStat" title="Issues successfully indexed in FAISS (INDEXED status in Neon DB)." data-tooltip="Issues successfully indexed in FAISS (INDEXED status in Neon DB).">
             <div class="stat-value" id="issuesValue">—</div>
@@ -86,64 +98,80 @@
         <span class="sample-query-hint">Or type any issue in your own words — semantic search matches meaning, not just keywords.</span>
     </div>
 
-    <div class="filters">
-        <select id="repoFilter">
-            <option value="">All Repositories</option>
-        </select>
-
-        <select id="sortFilter">
-            <option value="relevance">Best Match</option>
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-        </select>
-    </div>
-
-    <div class="search-settings">
-        <button type="button" class="search-settings-toggle" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">
-            <span>Retrieval Settings</span>
-            <svg class="settings-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-        </button>
-
-        <div class="search-settings-panel" id="settingsPanel" hidden>
-            <p class="settings-intro">
-                Tune FAISS retrieval and reranking per search. Defaults come from the deployed NLP service
-                (Render env: <code>FAISS_TOP_K</code>, <code>FINAL_K</code>, <code>RERANK_K</code>, <code>USE_RERANKER</code>).
-            </p>
-
-            <div class="settings-grid">
-                <label class="setting-field">
-                    <span class="setting-label">TOP_K</span>
-                    <span class="setting-hint">FAISS candidates retrieved</span>
-                    <input type="number" id="topK" min="1" max="100" step="1">
-                </label>
-
-                <label class="setting-field">
-                    <span class="setting-label">RERANK_K</span>
-                    <span class="setting-hint">Candidates sent to reranker</span>
-                    <input type="number" id="rerankK" min="1" max="100" step="1">
-                </label>
-
-                <label class="setting-field">
-                    <span class="setting-label">FINAL_K</span>
-                    <span class="setting-hint">Results returned to UI</span>
-                    <input type="number" id="finalK" min="1" max="100" step="1">
-                </label>
-
-                <label class="setting-field setting-toggle">
-                    <span class="setting-label">USE_RERANKER</span>
-                    <span class="setting-hint">TinyBERT cross-encoder reranking</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="useReranker">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </label>
+    <div class="search-refinements">
+        <div class="refinements-header">
+            <div>
+                <p class="refinements-kicker">Search controls</p>
+                <h2>Refine your results</h2>
             </div>
+            <span>Filters apply to the current search</span>
+        </div>
 
-            <div class="settings-actions">
-                <button type="button" class="btn-settings-secondary" id="resetSettings">Reset to server defaults</button>
-            </div>
+        <div class="filters">
+            <label class="filter-field">
+                <span>Repository</span>
+                <select id="repoFilter">
+                    <option value="">All Repositories</option>
+                </select>
+            </label>
+
+            <label class="filter-field">
+                <span>Sort by</span>
+                <select id="sortFilter">
+                    <option value="relevance">Best Match</option>
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="search-settings">
+                <button type="button" class="search-settings-toggle" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">
+                    <span>Advanced retrieval</span>
+                    <svg class="settings-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+
+                <div class="search-settings-panel" id="settingsPanel" hidden>
+                    <p class="settings-intro">
+                        Tune FAISS retrieval and reranking per search. Defaults come from the deployed NLP service
+                        (Render env: <code>FAISS_TOP_K</code>, <code>FINAL_K</code>, <code>RERANK_K</code>, <code>USE_RERANKER</code>).
+                    </p>
+
+                    <div class="settings-grid">
+                        <label class="setting-field">
+                            <span class="setting-label">TOP_K</span>
+                            <span class="setting-hint">FAISS candidates retrieved</span>
+                            <input type="number" id="topK" min="1" max="100" step="1">
+                        </label>
+
+                        <label class="setting-field">
+                            <span class="setting-label">RERANK_K</span>
+                            <span class="setting-hint">Candidates sent to reranker</span>
+                            <input type="number" id="rerankK" min="1" max="100" step="1">
+                        </label>
+
+                        <label class="setting-field">
+                            <span class="setting-label">FINAL_K</span>
+                            <span class="setting-hint">Results returned to UI</span>
+                            <input type="number" id="finalK" min="1" max="100" step="1">
+                        </label>
+
+                        <label class="setting-field setting-toggle">
+                            <span class="setting-label">USE_RERANKER</span>
+                            <span class="setting-hint">Jina reranker API</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="useReranker">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+
+                    <div class="settings-actions">
+                        <button type="button" class="btn-settings-secondary" id="resetSettings">Reset to server defaults</button>
+                    </div>
+                </div>
         </div>
     </div>
 
@@ -183,9 +211,9 @@
 
     const SEARCH_CONFIG_KEY = "devIssueSearchConfig";
     let serverSearchDefaults = {
-        topK: 10,
-        finalK: 5,
-        rerankK: 5,
+        topK: 20,
+        finalK: 10,
+        rerankK: 10,
         useReranker: true
     };
 

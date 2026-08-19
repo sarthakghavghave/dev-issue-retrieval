@@ -29,7 +29,7 @@
                 <div class="flow-arrow">↓</div>
                 <div class="flow-node flow-node-index">FAISS Vector Index<br><span class="flow-sub">On-disk index + metadata parquet</span></div>
                 <div class="flow-arrow">↓</div>
-                <div class="flow-node flow-node-search">Semantic Search + Reranking<br><span class="flow-sub">MiniLM query embedding · TinyBERT rerank</span></div>
+                <div class="flow-node flow-node-search">Semantic Search + Reranking<br><span class="flow-sub">Hugging Face query embedding · Jina API rerank</span></div>
             </div>
         </section>
 
@@ -39,7 +39,7 @@
                 <div class="component-card">
                     <div class="component-badge component-badge-db">Data Layer</div>
                     <h3>Neon PostgreSQL</h3>
-                    <p>Cloud-hosted PostgreSQL stores raw GitHub issue records with metadata, labels, comments, and an <code>index_status</code> field (<code>PENDING</code> → <code>INDEXING</code> → <code>INDEXED</code> / <code>FILTERED</code> / <code>FAILED</code>) to track the NLP pipeline lifecycle.</p>
+                    <p>Cloud-hosted PostgreSQL stores raw GitHub issue records with metadata (title, repository, URL, labels, creation/update timestamps, and comments) and an <code>index_status</code> field (<code>PENDING</code> → <code>INDEXING</code> → <code>INDEXED</code> / <code>FILTERED</code> / <code>FAILED</code>) to track the NLP pipeline lifecycle.</p>
                 </div>
                 <div class="component-card">
                     <div class="component-badge component-badge-backend">Backend</div>
@@ -49,7 +49,7 @@
                 <div class="component-card">
                     <div class="component-badge component-badge-nlp">NLP Service</div>
                     <h3>FastAPI (Python)</h3>
-                    <p>Connects directly to Neon to fetch <code>PENDING</code> issues, cleans and filters text, generates embeddings with <code>all-MiniLM-L6-v2</code>, updates the FAISS index, and serves <code>/search</code> with cross-encoder reranking.</p>
+                    <p>Connects directly to Neon to fetch <code>PENDING</code> issues, cleans and filters text, generates embeddings via Hugging Face API (<code>all-MiniLM-L6-v2</code>), updates the FAISS index, and serves <code>/search</code> with Jina Reranker API.</p>
                 </div>
             </div>
         </section>
@@ -76,7 +76,7 @@
                         <div class="step-arrow">↓</div>
                         <div class="step-card">
                             <div class="step-title">4. Embedding Generation</div>
-                            <div class="step-detail">Valid issues are encoded with <code>sentence-transformers/all-MiniLM-L6-v2</code> into normalized dense vectors optimized for free-tier memory limits.</div>
+                            <div class="step-detail">Valid issues are encoded using the Hugging Face API (<code>sentence-transformers/all-MiniLM-L6-v2</code>) into normalized dense vectors optimized for free-tier memory limits.</div>
                         </div>
                         <div class="step-arrow">↓</div>
                         <div class="step-card">
@@ -100,7 +100,7 @@
                         <div class="step-arrow">↓</div>
                         <div class="step-card">
                             <div class="step-title">3. Query Embedding</div>
-                            <div class="step-detail">The same MiniLM model encodes the query into a vector for semantic similarity search.</div>
+                            <div class="step-detail">The Hugging Face API encodes the query into a vector for semantic similarity search.</div>
                         </div>
                         <div class="step-arrow">↓</div>
                         <div class="step-card">
@@ -109,8 +109,8 @@
                         </div>
                         <div class="step-arrow">↓</div>
                         <div class="step-card">
-                            <div class="step-title">5. Cross-Encoder Reranking</div>
-                            <div class="step-detail"><code>cross-encoder/ms-marco-TinyBERT-L-2-v2</code> reranks candidates for precise relevance ordering before results are returned to the UI.</div>
+                            <div class="step-title">5. Jina API Reranking</div>
+                            <div class="step-detail">Jina Reranker API (<code>jina-reranker-v2-base-multilingual</code>) reranks candidates for precise relevance ordering before results are returned to the UI.</div>
                         </div>
                     </div>
                 </div>
@@ -144,9 +144,9 @@
             <ul>
                 <li><strong>Neon PostgreSQL</strong> is the cloud database for all raw GitHub issue records and pipeline status tracking.</li>
                 <li><strong>Spring Boot</strong> ingests from GitHub on a schedule, serves the web UI, and proxies search requests to the NLP service.</li>
-                <li><strong>FastAPI NLP service</strong> preprocesses text, generates embeddings, maintains the FAISS index, and reranks search results.</li>
+                <li><strong>FastAPI NLP service</strong> preprocesses text, generates embeddings via Hugging Face API, maintains the FAISS index, and reranks search results using Jina Reranker API.</li>
                 <li>Offline indexing and online search are separated so queries stay fast while the index grows incrementally.</li>
-                <li>Deployed on <strong>Render</strong> with Docker, using small models (MiniLM + TinyBERT) to fit free-tier memory limits.</li>
+                <li>Deployed on <strong>Render</strong> with Docker, using external ML APIs (Hugging Face API & Jina Reranker API) to fit free-tier memory limits.</li>
             </ul>
             <p class="arch-repo-link">
                 Explore the full implementation on

@@ -258,7 +258,7 @@ def search(request: SearchRequest):
             "repository": row["repository_name"],
             "url": row["issue_url"],
             "created_at": row["created_at"],
-            "body": row["body"][:200],
+            "body": row["body"],
             "labels": row["labels"],
             "score": float(score),
             "relevance": relevance_label(float(score), reranked=reranked),

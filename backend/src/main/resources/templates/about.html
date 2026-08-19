@@ -17,41 +17,18 @@
         </a>
     </div>
 
-    <div class="about-grid">
-        <div class="about-card">
-            <div class="about-icon">🔍</div>
-            <h3>Semantic Search</h3>
-            <p>Describe your problem in natural language instead of guessing keywords. The system uses <code>all-MiniLM-L6-v2</code> embeddings to find semantically similar GitHub issues across major open-source repositories.</p>
+    <div class="about-section motivation-section">
+        <div class="motivation-copy">
+            <p class="section-kicker">A better way to search</p>
+            <h2>Search the problem.<br><span>Don’t worry about the keywords.</span></h2>
+            <p>Explain what you are facing in your own words. The search finds related GitHub issues even when the wording is different.</p>
         </div>
-
-        <div class="about-card">
-            <div class="about-icon">☁️</div>
-            <h3>Neon Cloud Database</h3>
-            <p>All raw GitHub issue data is stored in a Neon PostgreSQL cloud database. Issues carry an <code>index_status</code> lifecycle (<code>PENDING</code>, <code>INDEXED</code>, <code>FILTERED</code>, <code>FAILED</code>) so only new or changed records enter the NLP pipeline.</p>
-        </div>
-
-        <div class="about-card">
-            <div class="about-icon">⚡</div>
-            <h3>FAISS Vector Retrieval</h3>
-            <p>Preprocessed issues are encoded into dense vectors and stored in a FAISS index for sub-second similarity search over thousands of curated issue records.</p>
-        </div>
-
-        <div class="about-card">
-            <div class="about-icon">🎯</div>
-            <h3>TinyBERT Reranking</h3>
-            <p>A <code>cross-encoder/ms-marco-TinyBERT-L-2-v2</code> model reranks FAISS candidates so the most relevant issues surface first — optimized for low-memory cloud deployment.</p>
-        </div>
-
-        <div class="about-card">
-            <div class="about-icon">🔄</div>
-            <h3>Incremental Ingestion</h3>
-            <p>A Spring Boot scheduler polls the GitHub API every 6 hours for updated issues across Spring Boot, Kafka, Kubernetes, Docker Compose, and PostgreSQL repos. New issues land in Neon as <code>PENDING</code> and are batch-processed into FAISS.</p>
-        </div>
-
-        <div class="about-card">
-            <div class="about-icon">📊</div>
-            <h3>Curated Dataset</h3>
-            <p>~5,500+ indexed issues after preprocessing and deduplication, with ~8,000 raw records in Neon. Noise issues (docs, upgrades, duplicates) are filtered out with tracked <code>filter_reason</code> values.</p>
+        <div class="ingestion-note">
+            <span class="ingestion-dot"></span>
+            <div>
+                <strong>Staying up to date</strong>
+                <p>New and updated issues are added automatically, so results stay fresh.</p>
+            </div>
         </div>
     </div>
 
@@ -86,7 +63,7 @@
                 <span class="step-number">4</span>
                 <div>
                     <h4>Cross-Encoder Reranking</h4>
-                    <p>TinyBERT reranks the top candidates for precise relevance. Results are returned with labels, repository info, and GitHub links.</p>
+                    <p>Jina API reranks the top candidates for precise relevance. Results are returned with labels, repository info, and GitHub links.</p>
                 </div>
             </div>
         </div>
@@ -105,7 +82,7 @@
                 <strong>NLP Service:</strong> FastAPI, Python, Sentence Transformers
             </div>
             <div class="tech-item">
-                <strong>Models:</strong> all-MiniLM-L6-v2 (embeddings), TinyBERT (reranking)
+                <strong>Models:</strong> Hugging Face - MiniLM and Jina reranker
             </div>
             <div class="tech-item">
                 <strong>Vector Index:</strong> FAISS (IndexFlatIP + ID mapping)
