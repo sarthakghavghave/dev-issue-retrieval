@@ -70,7 +70,7 @@ The backend also schedules automatic periodic ingestion so new or updated issues
 * Embeddings: Hugging Face Inference API (`sentence-transformers/all-MiniLM-L6-v2`)
 * Reranking: Jina Reranker API (`jina-reranker-v2-base-multilingual`)
 
-Using external APIs keeps the memory footprint near zero, allowing the service to run easily on free-tier cloud instances.
+The NLP service handles embedding and reranking, while these external APIs keep model weights out of the Render instance and reduce its memory usage on the free tier.
 
 ## Dataset
 
