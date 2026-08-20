@@ -1,6 +1,7 @@
 package com.devissueretrieval.scheduler;
 
 import com.devissueretrieval.service.IssueService;
+import com.devissueretrieval.service.StatsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +18,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class IssueScheduler {
 
     private final IssueService issueService;
+    private final StatsService statsService;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
-    
+
     private volatile LocalDateTime lastSuccessfulRun;
-    
+
     @Value("${issue.ingestion.fixed-rate:21600000}")
     private long fixedRate;
 
@@ -41,6 +43,7 @@ public class IssueScheduler {
             log.info("Starting scheduled GitHub issue ingestion (fixedRate={} ms)...", fixedRate);
             issueService.fetchIncrementalIssues();
             lastSuccessfulRun = LocalDateTime.now(ZoneOffset.UTC);
+            statsService.refreshStats();
             log.info("Issue ingestion completed.");
         } catch (Exception ex) {
             log.error("Scheduled ingestion failed", ex);
@@ -56,7 +59,7 @@ public class IssueScheduler {
     public long getFixedRate() {
         return fixedRate;
     }
-    
+
     public LocalDateTime getLastSuccessfulRun() {
         return lastSuccessfulRun;
     }

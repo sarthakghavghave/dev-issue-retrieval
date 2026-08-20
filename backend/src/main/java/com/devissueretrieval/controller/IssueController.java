@@ -1,6 +1,7 @@
 package com.devissueretrieval.controller;
 
 import com.devissueretrieval.service.IssueService;
+import com.devissueretrieval.service.StatsService;
 import com.devissueretrieval.scheduler.IssueScheduler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,10 +18,12 @@ public class IssueController {
 
     private final IssueService issueService;
     private final IssueScheduler issueScheduler;
+    private final StatsService statsService;
 
     @GetMapping("/incremental")
     public Map<String, Object> fetchIssues() {
         issueService.fetchIncrementalIssues();
+        statsService.refreshStats();
         Map<String, Object> body = new HashMap<>();
         body.put("status", "ok");
         body.put("message", "Incremental ingestion completed");

@@ -1,10 +1,8 @@
 package com.devissueretrieval.controller;
 
 import com.devissueretrieval.dto.IndexStatsDto;
-import com.devissueretrieval.model.IndexStatus;
-import com.devissueretrieval.repository.IssueRepository;
 import com.devissueretrieval.scheduler.IssueScheduler;
-import com.devissueretrieval.service.RetrievalService;
+import com.devissueretrieval.service.StatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,23 +15,14 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class StatsController {
 
-    private final IssueRepository issueRepository;
+    private final StatsService statsService;
     private final IssueScheduler issueScheduler;
-    private final RetrievalService retrievalService;
 
     @GetMapping
     public IndexStatsDto getStats() {
-        long indexedCount = issueRepository.countByIndexStatus(IndexStatus.INDEXED);
-        long total = indexedCount > 0 ? indexedCount : retrievalService.getNlpIndexSize();
-        if (total <= 0) {
-            total = issueRepository.count();
-        }
-        java.util.List<String> repos = issueRepository.findDistinctRepositoryNames();
-        long distinctRepos = repos.size();
-
         return IndexStatsDto.builder()
-                .issueCount(total)
-                .repositoryCount(distinctRepos)
+                .issueCount(statsService.getCachedIssueCount())
+                .repositoryCount(statsService.getCachedRepositoryCount())
                 .lastIngestionAt(
                         issueScheduler.getLastSuccessfulRun() == null
                                 ? "Never"
@@ -43,7 +32,7 @@ public class StatsController {
                 .retrievalBackend("FAISS")
                 .schedulerRunning(issueScheduler.isRunning())
                 .schedulerFixedRateMs(issueScheduler.getFixedRate())
-                .repositoryNames(repos)
+                .repositoryNames(statsService.getCachedRepositoryNames())
                 .build();
     }
 }
