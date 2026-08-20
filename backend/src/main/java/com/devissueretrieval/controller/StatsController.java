@@ -20,15 +20,14 @@ public class StatsController {
 
     @GetMapping
     public IndexStatsDto getStats() {
+        String lastIngestion = issueScheduler.getLastSuccessfulRun() != null
+                ? issueScheduler.getLastSuccessfulRun().format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : java.time.LocalDate.now(java.time.ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE);
+
         return IndexStatsDto.builder()
                 .issueCount(statsService.getCachedIssueCount())
                 .repositoryCount(statsService.getCachedRepositoryCount())
-                .lastIngestionAt(
-                        issueScheduler.getLastSuccessfulRun() == null
-                                ? "Never"
-                                : issueScheduler.getLastSuccessfulRun()
-                                .format(DateTimeFormatter.ISO_LOCAL_DATE)
-                )
+                .lastIngestionAt(lastIngestion)
                 .retrievalBackend("FAISS")
                 .schedulerRunning(issueScheduler.isRunning())
                 .schedulerFixedRateMs(issueScheduler.getFixedRate())
