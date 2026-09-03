@@ -3,6 +3,7 @@ body {
     font-family: Inter, Arial, sans-serif;
     background: #e2e8f0;
     color: #0f172a;
+    overflow-x: hidden;
 }
 .navbar{
     display: flex;
@@ -1535,36 +1536,227 @@ button:disabled{
 }
 
 @media (max-width: 768px) {
-    .flow-node {
-        min-width: 0;
+    .navbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px 20px;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .nav-links {
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px 16px;
         width: 100%;
     }
 
-    .search-tagline-card {
-        align-items: flex-start;
-        margin-top: 20px;
-        padding: 28px 24px;
+    .nav-links a {
+        font-size: 13px;
     }
 
-    .search-tagline-card h2 {
-        font-size: 27px;
+    .nav-github {
+        margin-left: auto;
     }
 
-    .search-tagline-mark {
+    .container {
+        width: auto;
+        margin: 24px 16px;
+    }
+
+    .hero {
+        margin-bottom: 24px;
+    }
+
+    .hero h1 {
+        font-size: 32px;
+        line-height: 1.15;
+    }
+
+    .hero p {
+        margin: 8px 0 0;
+        line-height: 1.5;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin: 22px 0;
+    }
+
+    .stat-card {
+        min-width: 0;
+        padding: 16px 10px;
+        border-radius: 12px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+        overflow-wrap: anywhere;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
+    .search-container {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 14px;
+    }
+
+    .search-input-wrapper input {
+        min-width: 0;
+        padding: 14px 12px 14px 46px;
+        font-size: 15px;
+    }
+
+    .search-shortcut {
         display: none;
     }
 
-    .refinements-header {
-        display: block;
+    .btn-search {
+        justify-content: center;
+        width: 100%;
+        padding: 13px 20px;
     }
 
-    .refinements-header > span {
-        display: block;
-        margin-top: 8px;
+    .sample-query-row {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 18px;
+        padding: 14px;
     }
 
-    .filters {
+    .sample-query-select {
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .sample-query-hint {
+        flex-basis: auto;
+    }
+
+    .search-refinements {
+        margin-bottom: 22px;
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .refinements-header h2 {
+        font-size: 18px;
+    }
+
+    .filters select {
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .search-settings-panel {
+        padding: 16px;
+    }
+
+    .settings-grid {
         grid-template-columns: 1fr;
+    }
+
+    .settings-actions {
+        justify-content: stretch;
+    }
+
+    .btn-settings-secondary {
+        width: 100%;
+    }
+
+    .result-card {
+        padding: 18px;
+        margin-bottom: 14px;
+        border-radius: 13px;
+    }
+
+    .result-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .result-title {
+        font-size: 16px;
+    }
+
+    .relevance {
+        font-size: 12px;
+    }
+
+    .preview {
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .arch-flow-diagram {
+        padding: 20px 12px;
+    }
+
+    .flow-node {
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 14px 16px;
+    }
+
+    .component-grid,
+    .incremental-grid,
+    .tech-list,
+    .use-case-list {
+        grid-template-columns: 1fr;
+    }
+
+    .component-card,
+    .incremental-item {
+        padding: 22px 18px;
+    }
+
+    .architecture-columns {
+        gap: 32px;
+    }
+
+    .step-card {
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
+    }
+
+    .step-card:hover {
+        max-width: none;
+        padding: 18px 22px;
+    }
+
+    .modal-content {
+        width: auto;
+        max-width: none;
+        margin: 16px;
+        padding: 22px 18px;
+        border-radius: 16px;
+    }
+
+    .modal-header h2 {
+        font-size: 20px;
+        line-height: 1.3;
+    }
+
+    .modal-body-text {
+        padding: 14px;
+        font-size: 14px;
+        line-height: 1.65;
     }
 
     .about-hero h1 {
@@ -1595,16 +1787,6 @@ button:disabled{
 
     .step-number {
         align-self: flex-start;
-    }
-
-    .modal-content {
-        width: 95%;
-        margin: 20px auto;
-        padding: 24px;
-    }
-
-    .modal-header h2 {
-        font-size: 22px;
     }
 
     .modal-footer {
