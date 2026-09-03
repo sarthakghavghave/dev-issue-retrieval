@@ -1,3 +1,7 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: Inter, Arial, sans-serif;
@@ -1791,6 +1795,136 @@ button:disabled{
 
     .modal-footer {
         text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        gap: 12px;
+        padding: 14px 16px;
+    }
+
+    .nav-links {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .nav-links a {
+        min-width: 0;
+        padding: 8px 4px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .nav-github {
+        grid-column: 1 / -1;
+        margin-left: 0;
+    }
+
+    .container {
+        margin: 20px 12px;
+    }
+
+    .hero h1 {
+        font-size: 28px;
+    }
+
+    .hero p {
+        font-size: 14px;
+    }
+
+    .search-tagline-card {
+        margin: 18px 0 22px;
+        padding: 24px 20px;
+        border-radius: 14px;
+    }
+
+    .search-tagline-kicker,
+    .refinements-kicker {
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .search-tagline-card h2 {
+        font-size: 25px;
+    }
+
+    .stats {
+        gap: 8px;
+        margin: 18px 0;
+    }
+
+    .stat-card {
+        padding: 14px 8px;
+    }
+
+    .stat-value {
+        font-size: 17px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+    }
+
+    .search-refinements {
+        padding: 14px;
+    }
+
+    .search-settings-toggle,
+    .filters select,
+    .sample-query-select {
+        min-height: 44px;
+    }
+
+    .result-card {
+        padding: 16px;
+    }
+
+    .about-hero {
+        margin-bottom: 28px;
+        padding: 20px 0;
+    }
+
+    .about-hero h1 {
+        font-size: 30px;
+        line-height: 1.15;
+    }
+
+    .about-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .motivation-section {
+        padding: 24px 20px;
+    }
+
+    .motivation-section h2 {
+        font-size: 27px;
+    }
+
+    .page-header h1 {
+        font-size: 30px;
+        line-height: 1.15;
+    }
+
+    .page-header {
+        margin-bottom: 26px;
+    }
+
+    .arch-flow-section h2,
+    .arch-components h2,
+    .arch-incremental h2 {
+        font-size: 20px;
+    }
+
+    .arch-flow-diagram {
+        padding: 16px 10px;
+    }
+
+    .flow-node {
+        font-size: 14px;
     }
 }
 
