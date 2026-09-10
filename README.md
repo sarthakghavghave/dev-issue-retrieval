@@ -6,7 +6,11 @@ Live Demo: https://dev-issue.onrender.com/
 
 ## Demo
 
-<video src="./demo/DevIssue.mp4" controls width="900"></video>
+
+
+https://github.com/user-attachments/assets/b1a0e704-53e2-4055-abcd-5487cefafc88
+
+
 
 ## Overview
 
