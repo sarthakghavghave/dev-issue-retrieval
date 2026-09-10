@@ -4,6 +4,10 @@ A full-stack semantic search platform for discovering relevant developer issues 
 
 Live Demo: https://dev-issue.onrender.com/
 
+## Demo
+
+<video src="./demo/DevIssue.mp4" controls width="900"></video>
+
 ## Overview
 
 Dev Issue Retrieval lets developers search GitHub issues with natural language instead of exact keywords.
