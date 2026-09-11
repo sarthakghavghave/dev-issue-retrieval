@@ -32,6 +32,10 @@ The system loads raw issue data from a cloud-hosted NEON database, preprocesses 
 
 ## System Architecture
 
+The application architecture, component interactions, and data flow are explained in detail on the hosted application.
+
+[View System Architecture](https://dev-issue.onrender.com/architecture)
+
 The system has three connected components:
 
 1. Cloud NEON database stores raw GitHub issue records.
